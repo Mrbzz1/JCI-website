@@ -1,0 +1,10 @@
+{
+  "name": "jci-oudref",
+  "private": true,
+  "description": "Site JCI Oudref — lance le serveur web (calendrier, galerie, API SQLite)",
+  "scripts": {
+    "start": "node server/server.js",
+    "install-server": "npm install --prefix server"
+  }
+}
+  

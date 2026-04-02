@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JCI Oudref</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="#mission" class="brand">
+                <img src="jci.png" alt="Logo JCI Oudref" id="nihow" width="56" height="56">
+                <span class="brand-text">JCI Oudref</span>
+            </a>
+            <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false"></button>
+            <nav class="site-nav" id="site-nav" aria-label="Navigation principale">
+                <ul>
+                    <li><a href="#mission">Mission </a></li>
+                <li><a href="#credo">Credo</a></li>
+                <li><a href="#bureauex">Bureau exécutif</a></li>
+                <li><a href="#bureaudir">Bureau directeur</a></li>
+                <li><a href="#prochains">Prochains événements</a></li>
+                <li><a href="#agenda">Agenda</a></li>
+                <li><a href="#galerie">Galerie</a></li>
+            </ul>
+        </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="mission" class="section-card section-hero">
+            <p class="eyebrow">Jeune Chambre Internationale</p>
+            <h1>JCI Oudref</h1>
+            <p class="lead">
+                Organisation de jeunes citoyens actifs qui créent un impact positif
+                dans la communauté d’Oudref — leadership, service et développement durable.
+            </p>
+            <div class="mission-vision-grid">
+                <article class="mission-vision-item">
+            <h2>Notre mission</h2>
+            <p>
+                    Offrir aux jeunes leaders des opportunités de développement du leadership
+                en leur donnant la capacité de créer des changements positifs.
+            </p>
+                </article>
+                <article class="mission-vision-item">
+                    <h2>Notre vision</h2>
+                    <p>
+                        Etre le principal réseau mondial de jeunes leaders.
+                    </p>
+                </article>
+            </div>
+
+            <div id="credo" class="credo-showcase" tabindex="-1">
+                <h2 class="credo-title">Notre credo</h2>
+                <blockquote class="credo-quote">
+            <p>
+                Nous croyons,<br>
+                Que la foi en Dieu donne à la vie son véritable sens <br>
+                Que la fraternité humaine transcende la souveraineté des nations <br>
+                Que la liberté des individus et de l’entreprise assure mieux la justice économique <br>
+                Que l’autorité doit s’appuyer sur la loi et non sur l’arbitraire <br>
+                Que la personne humaine est la plus précieuse des richesses <br>
+                Et que servir l’humanité constitue l’oeuvre la plus noble d’une vie
+            </p>
+                </blockquote>
+            </div>
+        </section>
+
+        <section id="bureauex" class="section-card">
+            <h2>Bureau exécutif</h2>
+            <figure class="figure-frame">
+                <img src="bureauexecutif.jpg" alt="Bureau exécutif JCI Oudref" loading="lazy">
+            </figure>
+        </section>
+
+        <section id="bureaudir" class="section-card">
+            <h2>Bureau directeur</h2>
+            <figure class="figure-frame">
+                <img src="bureaudirecteur.png" alt="Bureau directeur JCI Oudref" loading="lazy">
+            </figure>
+        </section>
+
+        <section id="chiffres" class="section-card">
+            <h2>Nos chiffres</h2>
+            <p class="section-intro">Actions, formations et partenariats.</p>
+            <div id="stats-grid" class="stats-grid" aria-live="polite">
+                <div class="stats-card">
+                    <div class="stats-value" data-stat="actions">—</div>
+                    <div class="stats-label">Actions</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-value" data-stat="formations">—</div>
+                    <div class="stats-label">Formations</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-value" data-stat="partenariats">—</div>
+                    <div class="stats-label">Partenariats</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="prochains" class="section-card">
+            <h2>Prochains événements</h2>
+            <p class="section-intro">Les prochaines formations, événements et réunions.</p>
+            <div id="upcoming-empty" class="empty-state" hidden>
+                <p>Aucun événement à venir pour le moment.</p>
+            </div>
+            <div id="upcoming-grid" class="upcoming-grid" aria-live="polite"></div>
+        </section>
+
+        <section id="agenda" class="section-card">
+            <h2>Agenda</h2>
+            <p class="section-intro">Calendrier des prochaines formations, événements et réunions.</p>
+            <p id="data-mode-hint" class="data-hint" hidden></p>
+            <div id="calendar" class="calendar-mount" role="region" aria-label="Calendrier de l'agenda"></div>
+            <p id="calendar-error" class="calendar-error" hidden></p>
+        </section>
+
+        <section id="galerie" class="section-card">
+            <h2>Galerie</h2>
+            <p class="section-intro">Photos des actions JCI Oudref, organisées par événement.</p>
+            <div id="gallery-empty" class="empty-state" hidden>
+                <p>Aucune photo pour le moment. Les images publiées depuis l’administration apparaîtront ici.</p>
+            </div>
+            <div id="gallery-grid"></div>
+        </section>
+
+        <section id="partenaires" class="section-card">
+            <h2>Partenaires & Sponsors</h2>
+
+            <div id="partners-empty" class="empty-state" hidden>
+                <p>Aucun partenaire pour le moment.</p>
+            </div>
+
+            <div class="partners-block">
+                <h3 class="subheading">Sponsors</h3>
+                <div id="sponsors-grid" class="partners-grid" aria-label="Sponsors"></div>
+            </div>
+
+            <div class="partners-block">
+                <h3 class="subheading">Partenaires</h3>
+                <div id="partners-grid" class="partners-grid" aria-label="Partenaires"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="site-footer-social">
+            <a class="social-link" href="https://www.facebook.com/JciOudhref?mibextid=wwXIfr&rdid=Ry7D6muXJrKfAzls&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F184Y13piaf%2F%3Fmibextid%3DwwXIfr#" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a class="social-link" href="https://instagram.com/jcioudhref/?igsh=MTJ5cHI1bm55ZzBsZA==&fbclid=IwY2xjawQvaKhleHRuA2FlbQIxMABicmlkETFGQ2dJZ1hHWVVZVm9LbGFJc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHgZmb0ZNOgmaWyDyG4nQZRnZAu9bWBNRJ3iyhS3NWHaDUkSneHpV0ud04edA_aem_2zHEd_nzhZtn7FGgResaXw" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a class="social-link" href="https://www.linkedin.com/in/jci-oudhref-105a933b0?utm_source=share_via&utm_content=profile&utm_medium=member_ios&fbclid=IwY2xjawQvaMVleHRuA2FlbQIxMABicmlkETFGQ2dJZ1hHWVVZVm9LbGFJc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHgZmb0ZNOgmaWyDyG4nQZRnZAu9bWBNRJ3iyhS3NWHaDUkSneHpV0ud04edA_aem_2zHEd_nzhZtn7FGgResaXw" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>
+            <a class="social-link" href="https://www.tiktok.com/@jci.oudhref?_r=1&_t=ZS-94xMVpGebDd&fbclid=IwY2xjawQvaIdleHRuA2FlbQIxMABicmlkETFGQ2dJZ1hHWVVZVm9LbGFJc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHi4t9eA1mJ2haVpKoSxVtWkGulZucBi_Ppb8Ol9okX06Pz4sPpbzYcysMW4N_aem_uSMENz9kg_F1-0EFwKBFSg" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.918-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48.02 2.96.02 4.44-.92-.21-1.96-.14-2.73.46-.67.52-.97 1.4-.91 2.25.04.67.36 1.31.9 1.72.82.65 2.04.78 2.94.25.65-.39 1.1-1.05 1.28-1.79.04-.14.06-.29.06-.44V.02h-.02z"/></svg>
+            </a>
+        </div>
+
+        <div class="site-footer-contact" aria-label="Contact">
+            <h3 class="site-footer-heading">Contact us</h3>
+            <p class="site-footer-contact-line"><strong>Location:</strong> Oudhref</p>
+            <p class="site-footer-contact-line">
+                <strong>Email:</strong>
+                <a class="site-footer-link" href="mailto:jcioudhref.tunisia@gmail.com">jcioudhref.tunisia@gmail.com</a>
+            </p>
+            <p class="site-footer-contact-line">
+                <strong>Formulaire de recrutement:</strong>
+                <a class="site-footer-link" href="https://l.instagram.com/?u=https%3A%2F%2Fdocs.google.com%2Fforms%2Fd%2Fe%2F1FAIpQLSebhWRILgQ6g2v_FKF7a7rJiNeIO2HRHwYw4f-X2Xxb2MHvxg%2Fviewform%3Futm_source%3Dig%26utm_medium%3Dsocial%26utm_content%3Dlink_in_bio%26fbclid%3DPAZnRzaAQ7LiVleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAacfrbDnAkEpgrRcH7J5NOaP_Br0g0QblAD8ktMQU2Iztb5TQ8dAVqhPZ9ujjA_aem_gpkxvMPxuVu_MbDGJns_rQ&e=AT7brU2uL7Hc2FYP7TJV4btAtErIhvB9rVnMub4J5boj4ZQ2bPV7Zmk5rucNzT9XroQ9QFpP1X_CLFmLziYKz7WY52SWkR1EZLPr1L52TQNsnVqZac4dBtLGPfje" target="_blank" rel="noopener noreferrer">Ouvrir le formulaire</a>
+            </p>
+        </div>
+
+        <p class="site-footer-web">
+            <a class="site-web-link" id="site-web-url" href="https://www.votre-site-jci.com" target="_blank" rel="noopener noreferrer">
+                <svg class="site-web-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 1.87-.7 3.59-1.87 4.91z"/></svg>
+                <span class="site-web-text">Site web JCI Oudref</span>
+            </a>
+        </p>
+        <p>&copy; 2026 JCI Oudref — Tous droits réservés.</p>
+    </footer>
+
+    <script src="js/jci-data.js"></script>
+    <!-- v6 : le bundle global est index.global.min.js (main.min.js ne définit pas window.FullCalendar) -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales-all.global.min.js"></script>
+    <script>
+        (function () {
+            var navToggle = document.getElementById('nav-toggle');
+            var siteNav = document.getElementById('site-nav');
+            if (navToggle && siteNav) {
+                navToggle.addEventListener('click', function () {
+                    var open = siteNav.classList.toggle('is-open');
+                    navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    navToggle.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+                });
+                siteNav.querySelectorAll('a').forEach(function (a) {
+                    a.addEventListener('click', function () {
+                        siteNav.classList.remove('is-open');
+                        navToggle.setAttribute('aria-expanded', 'false');
+                    });
+                });
+            }
+        })();
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            var hint = document.getElementById('data-mode-hint');
+            var upcomingGrid = document.getElementById('upcoming-grid');
+            var upcomingEmpty = document.getElementById('upcoming-empty');
+            var statsGrid = document.getElementById('stats-grid');
+            var sponsorsGrid = document.getElementById('sponsors-grid');
+            var partnersGrid = document.getElementById('partners-grid');
+            var partnersEmpty = document.getElementById('partners-empty');
+            try {
+                var server = await JciData.usesServer();
+                if (hint) {
+                    // On garde uniquement le message "mode serveur" et on masque le mode hors ligne.
+                    if (server) {
+                        hint.hidden = false;
+                        hint.textContent = 'Données chargées depuis le serveur (base SQLite).';
+                    } else {
+                        hint.hidden = true;
+                    }
+                }
+            } catch (e) {
+                if (hint) hint.hidden = true;
+            }
+
+            var calendarEl = document.getElementById('calendar');
+            var calendarErr = document.getElementById('calendar-error');
+            var events = [];
+            try {
+                events = await JciData.getAgendaEvents();
+            } catch (e) {
+                events = [];
+            }
+
+            renderUpcoming(events, upcomingGrid, upcomingEmpty);
+            await renderStats(statsGrid);
+
+            if (!calendarEl) return;
+
+            if (typeof FullCalendar === 'undefined') {
+                if (calendarErr) {
+                    calendarErr.hidden = false;
+                    calendarErr.textContent =
+                        'Le calendrier n’a pas pu se charger (script FullCalendar manquant ou bloqué). Vérifiez la connexion ou désactivez les bloqueurs de scripts.';
+                }
+                return;
+            }
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                firstDay: 1,
+                height: 'auto',
+                contentHeight: 'auto',
+                aspectRatio: 1.35,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: ''
+                },
+                events: events.map(function (ev) {
+                    return {
+                        title: (ev.type || '') + ' : ' + (ev.title || ''),
+                    start: ev.date,
+                    extendedProps: {
+                        place: ev.place || '',
+                        description: ev.description || ''
+                    }
+                    };
+                }),
+                eventDidMount: function (info) {
+                    var place = info.event.extendedProps.place;
+                    var description = info.event.extendedProps.description;
+                    var parts = [];
+                    if (place) parts.push('Lieu : ' + place);
+                    if (description) parts.push(description);
+                    if (parts.length) info.el.title = parts.join('\n');
+                }
+            });
+            calendar.render();
+
+            await renderGallery();
+            await renderPartners(sponsorsGrid, partnersGrid, partnersEmpty);
+        });
+
+        async function renderStats(gridEl) {
+            if (!gridEl) return;
+            try {
+                if (!JciData || !JciData.getSiteStats) return;
+                var s = await JciData.getSiteStats();
+                var map = {
+                    actions: s && s.actions != null ? s.actions : '—',
+                    formations: s && s.formations != null ? s.formations : '—',
+                    partenariats: s && s.partenariats != null ? s.partenariats : '—'
+                };
+                gridEl.querySelectorAll('[data-stat]').forEach(function (el) {
+                    var k = el.getAttribute('data-stat');
+                    if (!k) return;
+                    el.textContent = String(map[k] != null ? map[k] : '—');
+                });
+            } catch (e) {
+                // Laisse les tirets si erreur
+            }
+        }
+
+        async function renderPartners(sponsorsGrid, partnersGrid, emptyEl) {
+            try {
+                if (!JciData || !JciData.getPartners) return;
+                var items = await JciData.getPartners();
+                items = (items || []).slice().sort(function (a, b) {
+                    return (a.sortOrder || 0) - (b.sortOrder || 0);
+                });
+
+                function clear(el) {
+                    if (!el) return;
+                    el.innerHTML = '';
+                }
+
+                clear(sponsorsGrid);
+                clear(partnersGrid);
+
+                if (!items.length) {
+                    if (emptyEl) emptyEl.hidden = false;
+                    return;
+                }
+                if (emptyEl) emptyEl.hidden = true;
+
+                items.forEach(function (p) {
+                    var card = document.createElement(p.url ? 'a' : 'div');
+                    card.className = 'partner-card';
+                    if (p.url) {
+                        card.href = p.url;
+                        card.target = '_blank';
+                        card.rel = 'noopener noreferrer';
+                        card.setAttribute('aria-label', p.name || 'Partenaire');
+                    }
+
+                    var img = document.createElement('img');
+                    img.className = 'partner-logo';
+                    img.src = p.src;
+                    img.alt = p.name || 'Logo';
+                    img.loading = 'lazy';
+
+                    var name = document.createElement('div');
+                    name.className = 'partner-name';
+                    name.textContent = p.name || '';
+
+                    card.appendChild(img);
+                    card.appendChild(name);
+
+                    if (String(p.kind || '') === 'sponsor') {
+                        if (sponsorsGrid) sponsorsGrid.appendChild(card);
+                    } else {
+                        if (partnersGrid) partnersGrid.appendChild(card);
+                    }
+                });
+            } catch (e) {
+                if (emptyEl) emptyEl.hidden = true;
+            }
+        }
+
+        function renderUpcoming(events, gridEl, emptyEl) {
+            if (!gridEl) return;
+
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            function parseDate(iso) {
+                if (!iso) return null;
+                var d = new Date(iso);
+                if (isNaN(d.getTime())) return null;
+                d.setHours(0, 0, 0, 0);
+                return d;
+            }
+
+            function formatDateFr(iso) {
+                var d = parseDate(iso);
+                if (!d) return '';
+                try {
+                    return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+                } catch (e) {
+                    return iso;
+                }
+            }
+
+            function iconForType(type) {
+                var t = (type || '').toLowerCase();
+                if (t.indexOf('formation') !== -1) return '🎓';
+                if (t.indexOf('réunion') !== -1 || t.indexOf('reunion') !== -1) return '👥';
+                if (t.indexOf('événement') !== -1 || t.indexOf('evenement') !== -1) return '⭐';
+                return '📌';
+            }
+
+            function keyForEvent(ev) {
+                return (ev.date || '') + '__' + (ev.title || '');
+            }
+
+            function loadInterest() {
+                try {
+                    var raw = localStorage.getItem('jci_interest_counts_v1');
+                    return raw ? JSON.parse(raw) : {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function saveInterest(map) {
+                try {
+                    localStorage.setItem('jci_interest_counts_v1', JSON.stringify(map || {}));
+                } catch (e) {}
+            }
+
+            var upcoming = (events || [])
+                .map(function (ev) {
+                    return Object.assign({}, ev, { _d: parseDate(ev.date) });
+                })
+                .filter(function (ev) {
+                    return ev._d && ev._d.getTime() >= today.getTime();
+                })
+                .sort(function (a, b) {
+                    return a._d.getTime() - b._d.getTime();
+                })
+                .slice(0, 6);
+
+            gridEl.innerHTML = '';
+
+            if (upcoming.length === 0) {
+                if (emptyEl) emptyEl.hidden = false;
+                return;
+            }
+            if (emptyEl) emptyEl.hidden = true;
+
+            // Par appareil: un seul clic max par événement (0 ou 1).
+            // On migre l'ancien format "count" en booléen si besoin (count > 0 => intéressé).
+            var interest = loadInterest();
+
+            upcoming.forEach(function (ev) {
+                var key = keyForEvent(ev);
+                var stored = interest[key];
+                var interested = false;
+                if (typeof stored === 'boolean') interested = stored;
+                else interested = (Number(stored || 0) || 0) > 0;
+                var count = interested ? 1 : 0;
+
+                var card = document.createElement('article');
+                card.className = 'upcoming-card';
+
+                var top = document.createElement('div');
+                top.className = 'upcoming-top';
+
+                var icon = document.createElement('span');
+                icon.className = 'upcoming-icon';
+                icon.setAttribute('aria-hidden', 'true');
+                icon.textContent = iconForType(ev.type);
+
+                var titleWrap = document.createElement('div');
+                titleWrap.className = 'upcoming-titlewrap';
+
+                var title = document.createElement('h3');
+                title.className = 'upcoming-title';
+                title.textContent = (ev.type ? ev.type + ' : ' : '') + (ev.title || 'Événement');
+
+                var meta = document.createElement('p');
+                meta.className = 'upcoming-meta';
+                var dateText = formatDateFr(ev.date);
+                var placeText = ev.place ? ' • ' + ev.place : '';
+                meta.textContent = (dateText || ev.date || '') + placeText;
+
+                titleWrap.appendChild(title);
+                titleWrap.appendChild(meta);
+
+                top.appendChild(icon);
+                top.appendChild(titleWrap);
+
+                var actions = document.createElement('div');
+                actions.className = 'upcoming-actions';
+
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'interest-btn';
+                btn.setAttribute('aria-label', 'Je suis intéressé');
+
+                var heart = document.createElement('span');
+                heart.className = 'interest-heart';
+                heart.setAttribute('aria-hidden', 'true');
+                heart.textContent = '❤';
+
+                var label = document.createElement('span');
+                label.className = 'interest-label';
+                label.textContent = 'Intéressé';
+
+                var badge = document.createElement('span');
+                badge.className = 'interest-count';
+                badge.textContent = String(count);
+
+                btn.appendChild(heart);
+                btn.appendChild(label);
+                btn.appendChild(badge);
+
+                function syncInterestedUi(isOn) {
+                    btn.disabled = !!isOn;
+                    btn.classList.toggle('is-on', !!isOn);
+                    badge.textContent = isOn ? '1' : '0';
+                    btn.setAttribute('aria-label', isOn ? 'Déjà intéressé' : 'Je suis intéressé');
+                }
+
+                syncInterestedUi(interested);
+
+                btn.addEventListener('click', function () {
+                    if (btn.disabled) return;
+                    var map = loadInterest();
+                    map[key] = true;
+                    saveInterest(map);
+                    syncInterestedUi(true);
+                });
+
+                actions.appendChild(btn);
+
+                card.appendChild(top);
+                card.appendChild(actions);
+                gridEl.appendChild(card);
+            });
+        }
+
+        async function renderGallery() {
+            var grid = document.getElementById('gallery-grid');
+            var empty = document.getElementById('gallery-empty');
+            if (!grid) return;
+
+            var images = [];
+            try {
+                images = await JciData.getGalleryItems();
+            } catch (e) {
+                images = [];
+            }
+
+            grid.innerHTML = '';
+
+            if (images.length === 0) {
+                if (empty) empty.hidden = false;
+                return;
+            }
+            if (empty) empty.hidden = true;
+
+            var byEvent = {};
+            images.forEach(function (img) {
+                var key = img.eventKey || 'autre';
+                if (!byEvent[key]) byEvent[key] = [];
+                byEvent[key].push(img);
+            });
+
+            Object.keys(byEvent).forEach(function (key) {
+                var group = byEvent[key];
+                var title = group[0].eventTitle || 'Autres actions';
+
+                var details = document.createElement('details');
+                details.className = 'gallery-group gallery-folder';
+                details.open = true;
+
+                var summary = document.createElement('summary');
+                summary.className = 'gallery-folder-summary';
+
+                var icon = document.createElement('span');
+                icon.className = 'gallery-folder-icon';
+                icon.setAttribute('aria-hidden', 'true');
+                icon.textContent = '\u{1F4C1}';
+
+                var nameSpan = document.createElement('span');
+                nameSpan.className = 'gallery-folder-name';
+                nameSpan.textContent = title;
+
+                var countSpan = document.createElement('span');
+                countSpan.className = 'gallery-folder-count';
+                var n = group.length;
+                countSpan.textContent = n === 1 ? '1 photo' : n + ' photos';
+
+                summary.appendChild(icon);
+                summary.appendChild(nameSpan);
+                summary.appendChild(countSpan);
+
+                var innerGrid = document.createElement('div');
+                innerGrid.className = 'gallery-grid gallery-folder-inner';
+
+                group.forEach(function (img) {
+                    var card = document.createElement('div');
+                    card.className = 'gallery-card';
+                    var im = document.createElement('img');
+                    im.src = img.src;
+                    im.alt = img.name || 'Photo';
+                    im.loading = 'lazy';
+                    card.appendChild(im);
+                    innerGrid.appendChild(card);
+                });
+
+                details.appendChild(summary);
+                details.appendChild(innerGrid);
+                grid.appendChild(details);
+            });
+        }
+    </script>
+</body>
+</html>

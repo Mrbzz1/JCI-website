@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — JCI Oudref</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+    <header class="admin-top">
+        <div class="admin-top-inner">
+            <span class="admin-badge">Administration</span>
+            <h1 class="admin-title">JCI Oudref</h1>
+            <p class="admin-sub">Agenda et galerie</p>
+        </div>
+    </header>
+
+    <main class="admin-main">
+        <section class="section-card admin-login-section" id="login-section">
+            <h2 class="sr-only">Connexion</h2>
+            
+
+            <div id="login-box" class="login-card">
+                <div class="form-row">
+                    <label for="admin-password">Mot de passe</label>
+                    <input type="password" id="admin-password" autocomplete="current-password" placeholder="Mot de passe">
+                </div>
+                <button type="button" id="login-button" class="btn-primary">Se connecter</button>
+                <p id="login-error" class="form-error" role="alert" hidden>Mot de passe incorrect.</p>
+            </div>
+        </section>
+
+        <div id="admin-panel" class="admin-panel" hidden>
+            <p id="admin-mode-banner" class="data-hint"></p>
+
+            <div class="admin-tabs" role="tablist" aria-label="Sections admin">
+                <button type="button" class="admin-tab is-active" role="tab" aria-selected="true" data-tab="agenda">Agenda</button>
+                <button type="button" class="admin-tab" role="tab" aria-selected="false" data-tab="gallery">Galerie</button>
+                <button type="button" class="admin-tab" role="tab" aria-selected="false" data-tab="site">Site</button>
+            </div>
+
+            <section id="agenda-admin" class="admin-tab-panel is-active" role="tabpanel">
+                <h2 class="panel-heading">Gérer l’agenda</h2>
+                <p class="section-intro">Ajoutez des dates de formations, événements et réunions.</p>
+
+                <form id="agenda-form" class="admin-form">
+                    <div class="form-row">
+                        <label for="agenda-date">Date <span class="req">*</span></label>
+                        <input type="date" id="agenda-date" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="agenda-title">Titre <span class="req">*</span></label>
+                        <input type="text" id="agenda-title" placeholder="Formation leadership…" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="agenda-type">Type</label>
+                        <select id="agenda-type">
+                            <option value="Formation">Formation</option>
+                            <option value="Événement">Événement</option>
+                            <option value="Réunion">Réunion</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="agenda-place">Lieu <span class="req">*</span></label>
+                        <input type="text" id="agenda-place" placeholder="Ex. Maison des jeunes" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="agenda-description">Description</label>
+                        <textarea id="agenda-description" rows="3" placeholder="Heure, intervenant…"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Ajouter</button>
+                </form>
+
+                <div id="agenda-local-actions" class="admin-actions">
+                    <button id="agenda-publish" type="button" class="btn-primary">Publier l’agenda</button>
+                    <button id="agenda-reset" type="button" class="btn-danger-outline">Annuler les brouillons</button>
+                </div>
+
+                <h3 class="subheading">Événements</h3>
+                <ul id="agenda-list" class="agenda-admin-list"></ul>
+            </section>
+
+            <section id="gallery-admin" class="admin-tab-panel" role="tabpanel" hidden>
+                <h2 class="panel-heading">Gérer la galerie</h2>
+                <p class="section-intro">Associez des images à un événement de l’agenda.</p>
+
+                <div class="form-row">
+                    <label for="gallery-event">Événement <span class="req">*</span></label>
+                    <select id="gallery-event">
+                        <option value="">— Choisir un événement —</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="gallery-files">Images (PNG, JPG…)</label>
+                    <input type="file" id="gallery-files" accept="image/*" multiple>
+                </div>
+                <button id="gallery-add" type="button" class="btn-primary">Ajouter à la galerie</button>
+
+                <div id="gallery-local-actions" class="admin-actions">
+                    <button id="gallery-publish" type="button" class="btn-primary">Publier la galerie</button>
+                    <button id="gallery-reset" type="button" class="btn-danger-outline">Annuler les brouillons</button>
+                </div>
+
+                <h3 class="subheading">Aperçu</h3>
+                <div id="gallery-grid" class="gallery-grid-root"></div>
+            </section>
+
+            <section id="site-admin" class="admin-tab-panel" role="tabpanel" hidden>
+                <h2 class="panel-heading">Contenu du site</h2>
+                <p class="section-intro">Gérez les chiffres et la section Partenaires / Sponsors.</p>
+
+                <h3 class="subheading">Nos chiffres</h3>
+                <form id="stats-form" class="admin-form">
+                    <div class="form-row">
+                        <label for="stat-actions">Actions</label>
+                        <input type="number" id="stat-actions" min="0" step="1" value="0">
+                    </div>
+                    <div class="form-row">
+                        <label for="stat-formations">Formations</label>
+                        <input type="number" id="stat-formations" min="0" step="1" value="0">
+                    </div>
+                    <div class="form-row">
+                        <label for="stat-partenariats">Partenariats</label>
+                        <input type="number" id="stat-partenariats" min="0" step="1" value="0">
+                    </div>
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                </form>
+
+                <div id="stats-local-actions" class="admin-actions">
+                    <button id="stats-publish" type="button" class="btn-primary">Publier les chiffres</button>
+                    <button id="stats-reset" type="button" class="btn-danger-outline">Annuler les brouillons</button>
+                </div>
+
+                <h3 class="subheading">Partenaires & Sponsors</h3>
+                <form id="partner-form" class="admin-form">
+                    <div class="form-row">
+                        <label for="partner-kind">Type</label>
+                        <select id="partner-kind">
+                            <option value="sponsor">Sponsor</option>
+                            <option value="partner">Partenaire</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="partner-name">Nom <span class="req">*</span></label>
+                        <input type="text" id="partner-name" required placeholder="Nom du partenaire">
+                    </div>
+                    <div class="form-row">
+                        <label for="partner-url">Lien (optionnel)</label>
+                        <input type="url" id="partner-url" placeholder="https://...">
+                    </div>
+                    <div class="form-row">
+                        <label for="partner-order">Ordre (optionnel)</label>
+                        <input type="number" id="partner-order" min="0" step="1" value="0">
+                    </div>
+                    <div class="form-row">
+                        <label for="partner-logo">Logo (PNG/JPG) <span class="req">*</span></label>
+                        <input type="file" id="partner-logo" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Ajouter</button>
+                </form>
+
+                <div id="partners-local-actions" class="admin-actions">
+                    <button id="partners-publish" type="button" class="btn-primary">Publier partenaires</button>
+                    <button id="partners-reset" type="button" class="btn-danger-outline">Annuler les brouillons</button>
+                </div>
+
+                <h3 class="subheading">Liste</h3>
+                <div id="partners-list" class="gallery-grid-root"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer admin-footer-note">
+        <p>En production, utilisez HTTPS et un mot de passe fort côté serveur (<code>ADMIN_TOKEN</code>).</p>
+    </footer>
+
+    <script src="js/jci-data.js"></script>
+    <script>
+        const ADMIN_PASSWORD = 'olm_oudhref2026';
+
+        const loginSection = document.getElementById('login-section');
+        const loginBox = document.getElementById('login-box');
+        const loginButton = document.getElementById('login-button');
+        const passwordInput = document.getElementById('admin-password');
+        const loginError = document.getElementById('login-error');
+        const adminPanel = document.getElementById('admin-panel');
+        const agendaAdminSection = document.getElementById('agenda-admin');
+        const galleryAdminSection = document.getElementById('gallery-admin');
+        const siteAdminSection = document.getElementById('site-admin');
+        const modeBanner = document.getElementById('admin-mode-banner');
+        const agendaLocalActions = document.getElementById('agenda-local-actions');
+        const galleryLocalActions = document.getElementById('gallery-local-actions');
+        const statsLocalActions = document.getElementById('stats-local-actions');
+        const partnersLocalActions = document.getElementById('partners-local-actions');
+
+        const form = document.getElementById('agenda-form');
+        const list = document.getElementById('agenda-list');
+        const dateInput = document.getElementById('agenda-date');
+        const titleInput = document.getElementById('agenda-title');
+        const typeSelect = document.getElementById('agenda-type');
+        const placeInput = document.getElementById('agenda-place');
+        const descInput = document.getElementById('agenda-description');
+
+        const agendaPublishButton = document.getElementById('agenda-publish');
+        const agendaResetButton = document.getElementById('agenda-reset');
+
+        const galleryEventSelect = document.getElementById('gallery-event');
+        const galleryFilesInput = document.getElementById('gallery-files');
+        const galleryAddButton = document.getElementById('gallery-add');
+        const galleryGrid = document.getElementById('gallery-grid');
+        const galleryPublishButton = document.getElementById('gallery-publish');
+        const galleryResetButton = document.getElementById('gallery-reset');
+
+        const statsForm = document.getElementById('stats-form');
+        const statActionsInput = document.getElementById('stat-actions');
+        const statFormationsInput = document.getElementById('stat-formations');
+        const statPartenariatsInput = document.getElementById('stat-partenariats');
+        const statsPublishButton = document.getElementById('stats-publish');
+        const statsResetButton = document.getElementById('stats-reset');
+
+        const partnerForm = document.getElementById('partner-form');
+        const partnerKindSelect = document.getElementById('partner-kind');
+        const partnerNameInput = document.getElementById('partner-name');
+        const partnerUrlInput = document.getElementById('partner-url');
+        const partnerOrderInput = document.getElementById('partner-order');
+        const partnerLogoInput = document.getElementById('partner-logo');
+        const partnersPublishButton = document.getElementById('partners-publish');
+        const partnersResetButton = document.getElementById('partners-reset');
+        const partnersList = document.getElementById('partners-list');
+
+        function showToast(msg) {
+            alert(msg);
+        }
+
+        function setLocalActionsVisible(visible) {
+            if (agendaLocalActions) agendaLocalActions.hidden = !visible;
+            if (galleryLocalActions) galleryLocalActions.hidden = !visible;
+            if (statsLocalActions) statsLocalActions.hidden = !visible;
+            if (partnersLocalActions) partnersLocalActions.hidden = !visible;
+        }
+
+        async function updateModeUi() {
+            const server = await JciData.usesServer();
+            if (modeBanner) {
+                modeBanner.textContent = server
+                    ? 'Mode serveur : les ajouts et suppressions sont enregistrés dans la base SQLite.'
+                    : 'Mode navigateur : utilisez « Publier » pour rendre les changements visibles sur le site (localStorage).';
+            }
+            setLocalActionsVisible(!server);
+        }
+
+        function switchTab(name) {
+            document.querySelectorAll('.admin-tab').forEach((btn) => {
+                const on = btn.getAttribute('data-tab') === name;
+                btn.classList.toggle('is-active', on);
+                btn.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            const showAgenda = name === 'agenda';
+            if (agendaAdminSection) {
+                agendaAdminSection.hidden = !showAgenda;
+                agendaAdminSection.classList.toggle('is-active', showAgenda);
+            }
+            if (galleryAdminSection) {
+                galleryAdminSection.hidden = showAgenda;
+                galleryAdminSection.classList.toggle('is-active', !showAgenda);
+            }
+            if (siteAdminSection) {
+                const showSite = name === 'site';
+                siteAdminSection.hidden = !showSite;
+                siteAdminSection.classList.toggle('is-active', showSite);
+                if (showSite) {
+                    renderSiteAdmin();
+                }
+            }
+        }
+
+        document.querySelectorAll('.admin-tab').forEach((btn) => {
+            btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+        });
+
+        function eventKey(ev) {
+            return (ev.date || '') + '__' + (ev.title || '');
+        }
+
+        async function populateGalleryEventsSelect() {
+            const events = await JciData.adminListEvents();
+            galleryEventSelect.innerHTML = '<option value="">— Choisir un événement —</option>';
+            events
+                .slice()
+                .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+                .forEach((ev) => {
+                    const key = eventKey(ev);
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = (ev.date || '') + ' — ' + (ev.title || '');
+                    galleryEventSelect.appendChild(option);
+                });
+        }
+
+        function clearElement(el) {
+            while (el.firstChild) el.removeChild(el.firstChild);
+        }
+
+        async function renderSiteAdmin() {
+            try {
+                const server = await JciData.usesServer();
+                let stats = server ? await JciData.getSiteStats() : JciData.loadDraftSiteStats();
+                stats = stats || { actions: 0, formations: 0, partenariats: 0 };
+                if (statActionsInput) statActionsInput.value = String(stats.actions || 0);
+                if (statFormationsInput) statFormationsInput.value = String(stats.formations || 0);
+                if (statPartenariatsInput) statPartenariatsInput.value = String(stats.partenariats || 0);
+            } catch (e) {}
+
+            try {
+                await renderPartnersAdmin();
+            } catch (e) {}
+        }
+
+        async function renderEvents() {
+            clearElement(list);
+            const server = await JciData.usesServer();
+            let rows = await JciData.adminListEvents();
+
+            if (!server) {
+                rows = rows.map((ev, i) => Object.assign({}, ev, { _localIndex: i }));
+                rows.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+            } else {
+                rows = rows.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+            }
+
+            rows.forEach((ev) => {
+                const li = document.createElement('li');
+                li.className = 'agenda-admin-item';
+
+                const line = document.createElement('div');
+                line.className = 'agenda-admin-line';
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'agenda-date';
+                dateSpan.textContent = ev.date || '';
+                line.appendChild(dateSpan);
+                line.appendChild(document.createTextNode(' — '));
+                const strong = document.createElement('strong');
+                strong.textContent = ev.type || '';
+                line.appendChild(strong);
+                line.appendChild(document.createTextNode(' : '));
+                line.appendChild(document.createTextNode(ev.title || ''));
+                li.appendChild(line);
+
+                const placeRow = document.createElement('div');
+                placeRow.className = 'agenda-desc';
+                const placeLabel = document.createElement('strong');
+                placeLabel.textContent = 'Lieu : ';
+                placeRow.appendChild(placeLabel);
+                placeRow.appendChild(document.createTextNode(ev.place || '—'));
+                li.appendChild(placeRow);
+
+                if (ev.description) {
+                    const desc = document.createElement('div');
+                    desc.className = 'agenda-desc';
+                    desc.textContent = ev.description;
+                    li.appendChild(desc);
+                }
+
+                const del = document.createElement('button');
+                del.type = 'button';
+                del.className = 'danger';
+                del.textContent = 'Supprimer';
+                del.addEventListener('click', async () => {
+                    try {
+                        if (server) {
+                            await JciData.adminDeleteEvent(ev.id);
+                        } else {
+                            await JciData.adminDeleteEvent(ev._localIndex);
+                        }
+                        await renderEvents();
+                        await populateGalleryEventsSelect();
+                        await renderGalleryAdmin();
+                    } catch (e) {
+                        if (e.message === 'auth') showToast('Session expirée. Reconnectez-vous.');
+                        else showToast(e.message || 'Erreur');
+                    }
+                });
+                li.appendChild(del);
+                list.appendChild(li);
+            });
+        }
+
+        async function renderGalleryAdmin() {
+            galleryGrid.innerHTML = '';
+            const items = await JciData.adminGalleryListForUi();
+            const server = await JciData.usesServer();
+
+            const byEvent = {};
+            items.forEach((img) => {
+                const key = img.eventKey || 'autre';
+                if (!byEvent[key]) byEvent[key] = [];
+                byEvent[key].push(img);
+            });
+
+            Object.keys(byEvent).forEach((key) => {
+                const group = byEvent[key];
+                const title = group[0].eventTitle || 'Autre';
+
+                const details = document.createElement('details');
+                details.className = 'gallery-group gallery-folder';
+                details.open = true;
+
+                const summary = document.createElement('summary');
+                summary.className = 'gallery-folder-summary';
+
+                const icon = document.createElement('span');
+                icon.className = 'gallery-folder-icon';
+                icon.setAttribute('aria-hidden', 'true');
+                icon.textContent = '\u{1F4C1}';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'gallery-folder-name';
+                nameSpan.textContent = title;
+
+                const countSpan = document.createElement('span');
+                countSpan.className = 'gallery-folder-count';
+                const n = group.length;
+                countSpan.textContent = n === 1 ? '1 photo' : n + ' photos';
+
+                summary.appendChild(icon);
+                summary.appendChild(nameSpan);
+                summary.appendChild(countSpan);
+
+                const innerGrid = document.createElement('div');
+                innerGrid.className = 'gallery-grid gallery-folder-inner';
+
+                group.forEach((item) => {
+                    const card = document.createElement('div');
+                    card.className = 'gallery-card';
+                    const im = document.createElement('img');
+                    im.src = item.src;
+                    im.alt = item.name || 'Photo';
+                    im.loading = 'lazy';
+                    card.appendChild(im);
+                    const actions = document.createElement('div');
+                    actions.className = 'gallery-actions';
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'danger';
+                    btn.textContent = 'Supprimer';
+                    btn.addEventListener('click', async () => {
+                        try {
+                            const id = server ? item.dbId : item.localIndex;
+                            await JciData.adminDeleteGalleryImage(id);
+                            await renderGalleryAdmin();
+                        } catch (e) {
+                            if (e.message === 'auth') showToast('Session expirée.');
+                            else showToast(e.message || 'Erreur');
+                        }
+                    });
+                    actions.appendChild(btn);
+                    card.appendChild(actions);
+                    innerGrid.appendChild(card);
+                });
+
+                details.appendChild(summary);
+                details.appendChild(innerGrid);
+                galleryGrid.appendChild(details);
+            });
+        }
+
+        async function renderPartnersAdmin() {
+            if (!partnersList) return;
+            partnersList.innerHTML = '';
+            const server = await JciData.usesServer();
+            const items = await JciData.adminPartnersListForUi();
+            const rows = (items || []).slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+            if (!rows.length) {
+                partnersList.innerHTML = '<p class="muted">Aucun partenaire/sponsor pour le moment.</p>';
+                return;
+            }
+
+            rows.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'gallery-card';
+
+                const im = document.createElement('img');
+                im.src = item.src;
+                im.alt = item.name || 'Logo';
+                im.loading = 'lazy';
+                card.appendChild(im);
+
+                const caption = document.createElement('div');
+                caption.className = 'gallery-actions';
+                caption.style.justifyContent = 'space-between';
+                caption.style.gap = '10px';
+
+                const left = document.createElement('div');
+                left.style.fontWeight = '700';
+                left.style.color = 'var(--color-primary)';
+                left.textContent = (item.kind === 'sponsor' ? 'Sponsor' : 'Partenaire') + ' — ' + (item.name || '');
+                caption.appendChild(left);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'danger';
+                btn.textContent = 'Supprimer';
+                btn.addEventListener('click', async () => {
+                    try {
+                        const id = server ? item.dbId : item.localIndex;
+                        await JciData.adminDeletePartner(id);
+                        await renderPartnersAdmin();
+                    } catch (e) {
+                        if (e.message === 'auth') showToast('Session expirée.');
+                        else showToast(e.message || 'Erreur');
+                    }
+                });
+                caption.appendChild(btn);
+
+                card.appendChild(caption);
+                partnersList.appendChild(card);
+            });
+        }
+
+        loginButton.addEventListener('click', async () => {
+            const val = passwordInput.value;
+            if (val !== ADMIN_PASSWORD) {
+                loginError.hidden = false;
+                return;
+            }
+            loginError.hidden = true;
+            JciData.setAdminToken(val);
+            loginSection.hidden = true;
+            adminPanel.hidden = false;
+            await updateModeUi();
+            await renderEvents();
+            await populateGalleryEventsSelect();
+            await renderGalleryAdmin();
+            await renderSiteAdmin();
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const date = dateInput.value;
+            const title = titleInput.value.trim();
+            const type = typeSelect.value;
+            const place = placeInput.value.trim();
+            const description = descInput.value.trim();
+            if (!date || !title || !place) return;
+
+            try {
+                await JciData.adminAddEvent({ date, title, type, place, description });
+                form.reset();
+                await renderEvents();
+                await populateGalleryEventsSelect();
+                const server = await JciData.usesServer();
+                if (server) showToast('Événement enregistré sur le serveur.');
+            } catch (err) {
+                if (err.message === 'auth') showToast('Session expirée. Reconnectez-vous.');
+                else showToast(err.message || 'Erreur');
+            }
+        });
+
+        galleryAddButton.addEventListener('click', async () => {
+            const files = Array.from(galleryFilesInput.files || []);
+            if (files.length === 0) return;
+
+            const selectedKey = galleryEventSelect.value;
+            if (!selectedKey) {
+                showToast('Choisissez un événement pour ces photos.');
+                return;
+            }
+
+            const events = await JciData.adminListEvents();
+            const matched = events.find((ev) => eventKey(ev) === selectedKey);
+            const eventTitle = matched ? (matched.date + ' — ' + matched.title) : 'Autre';
+
+            try {
+                await JciData.adminAddGalleryImages({
+                    eventKey: selectedKey,
+                    eventTitle,
+                    files
+                });
+                galleryFilesInput.value = '';
+                await renderGalleryAdmin();
+                const server = await JciData.usesServer();
+                if (server) showToast('Images enregistrées sur le serveur.');
+            } catch (err) {
+                if (err.message === 'auth') showToast('Session expirée.');
+                else showToast(err.message || 'Erreur');
+            }
+        });
+
+        if (statsForm) {
+            statsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const stats = {
+                    actions: Number(statActionsInput.value || 0) || 0,
+                    formations: Number(statFormationsInput.value || 0) || 0,
+                    partenariats: Number(statPartenariatsInput.value || 0) || 0
+                };
+                try {
+                    await JciData.adminUpdateSiteStats(stats);
+                    const server = await JciData.usesServer();
+                    if (server) showToast('Chiffres enregistrés sur le serveur.');
+                } catch (err) {
+                    if (err.message === 'auth') showToast('Session expirée. Reconnectez-vous.');
+                    else showToast(err.message || 'Erreur');
+                }
+            });
+        }
+
+        if (statsPublishButton) {
+            statsPublishButton.addEventListener('click', () => {
+                const stats = {
+                    actions: Number(statActionsInput.value || 0) || 0,
+                    formations: Number(statFormationsInput.value || 0) || 0,
+                    partenariats: Number(statPartenariatsInput.value || 0) || 0
+                };
+                JciData.saveDraftSiteStats(stats);
+                JciData.publishSiteStatsLocal();
+                showToast('Chiffres publiés (localStorage). Actualisez la page d’accueil.');
+            });
+        }
+
+        if (statsResetButton) {
+            statsResetButton.addEventListener('click', () => {
+                localStorage.removeItem(JciData.LS.siteStatsDraft);
+                renderSiteAdmin();
+            });
+        }
+
+        if (partnerForm) {
+            partnerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const file = (partnerLogoInput && partnerLogoInput.files && partnerLogoInput.files[0]) || null;
+                if (!file) return;
+                const payload = {
+                    kind: partnerKindSelect.value,
+                    name: partnerNameInput.value.trim(),
+                    url: partnerUrlInput.value.trim(),
+                    sortOrder: Number(partnerOrderInput.value || 0) || 0,
+                    file
+                };
+                if (!payload.name) return;
+                try {
+                    await JciData.adminAddPartner(payload);
+                    partnerForm.reset();
+                    await renderPartnersAdmin();
+                    const server = await JciData.usesServer();
+                    if (server) showToast('Partenaire enregistré sur le serveur.');
+                } catch (err) {
+                    if (err.message === 'auth') showToast('Session expirée.');
+                    else showToast(err.message || 'Erreur');
+                }
+            });
+        }
+
+        if (partnersPublishButton) {
+            partnersPublishButton.addEventListener('click', () => {
+                JciData.publishPartnersLocal();
+                renderPartnersAdmin();
+                showToast('Partenaires publiés (localStorage). Actualisez la page d’accueil.');
+            });
+        }
+
+        if (partnersResetButton) {
+            partnersResetButton.addEventListener('click', () => {
+                localStorage.removeItem(JciData.LS.partnersDraft);
+                renderPartnersAdmin();
+            });
+        }
+
+        agendaPublishButton.addEventListener('click', () => {
+            JciData.publishAgendaLocal();
+            renderEvents();
+            populateGalleryEventsSelect();
+            showToast('Agenda publié (localStorage). Actualisez la page d’accueil.');
+        });
+
+        agendaResetButton.addEventListener('click', () => {
+            localStorage.removeItem(JciData.LS.agendaDraft);
+            renderEvents();
+        });
+
+        galleryPublishButton.addEventListener('click', () => {
+            JciData.publishGalleryLocal();
+            renderGalleryAdmin();
+            showToast('Galerie publiée (localStorage). Actualisez la page d’accueil.');
+        });
+
+        galleryResetButton.addEventListener('click', () => {
+            localStorage.removeItem(JciData.LS.galleryDraft);
+            renderGalleryAdmin();
+        });
+    </script>
+</body>
+</html>
