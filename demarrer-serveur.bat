@@ -14,8 +14,8 @@ if not exist "server\node_modules\" (
 
 echo.
 echo [JCI] Demarrage du serveur...
-echo [JCI] Ouvrez: http://localhost:3000
-echo [JCI] Admin: http://localhost:3000/admin.html
+echo [JCI] Ouvrez: https://jci-website-orcin.vercel.app:3000
+echo [JCI] Admin: https://jci-website-orcin.vercel.app:3000/admin.html
 echo [JCI] Ctrl+C pour arreter.
 echo.
 
