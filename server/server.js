@@ -218,9 +218,20 @@ app.delete('/api/partners/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
-app.use(express.static(rootDir, { index: 'index.html' }));
+// Serve static files from the public directory
+app.use(express.static(path.join(rootDir, 'public')));
+
+// Serve admin.html for /admin route
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(rootDir, 'public', 'admin.html'));
+});
+
+// Serve index.html for all other non-API routes (SPA support)
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(rootDir, 'public', 'index.html'));
+});
 
 app.listen(PORT, () => {
-  console.log(`JCI Oudref — https://jci-website-orcin.vercel.app:${PORT}`);
-  console.log(`API santé : https://jci-website-orcin.vercel.app:${PORT}/api/health`);
+  console.log(`JCI Oudref server running on port ${PORT}`);
+  console.log(`API health check: http://localhost:${PORT}/api/health`);
 });
