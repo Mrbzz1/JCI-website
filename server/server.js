@@ -221,6 +221,6 @@ app.delete('/api/partners/:id', requireAdmin, (req, res) => {
 app.use(express.static(rootDir, { index: 'index.html' }));
 
 app.listen(PORT, () => {
-  console.log(`JCI Oudref — http://localhost:${PORT}`);
-  console.log(`API santé : http://localhost:${PORT}/api/health`);
+  console.log(`JCI Oudref — https://jci-website-orcin.vercel.app:${PORT}`);
+  console.log(`API santé : https://jci-website-orcin.vercel.app:${PORT}/api/health`);
 });
