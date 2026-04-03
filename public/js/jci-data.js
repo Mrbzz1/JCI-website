@@ -27,11 +27,15 @@
   }
 
   function getAdminToken() {
-    return sessionStorage.getItem('jciAdminToken') || '';
+    const token = sessionStorage.getItem('jciAdminToken') || '';
+    console.log('[JciData] getAdminToken():', token ? token.substring(0, 8) + '...' : '(empty)');
+    return token;
   }
 
   function adminHeaders(json) {
-    const h = { 'X-Admin-Token': getAdminToken() };
+    const token = getAdminToken();
+    console.log('[JciData] adminHeaders() - token being sent:', token ? token.substring(0, 8) + '...' : '(empty)');
+    const h = { 'X-Admin-Token': token };
     if (json) h['Content-Type'] = 'application/json';
     return h;
   }
@@ -84,14 +88,22 @@
   /** Admin : ajouter un événement */
   async function adminAddEvent(ev) {
     if (await checkApi()) {
+      console.log('[JciData] adminAddEvent() - calling POST /api/events');
+      const headers = adminHeaders(true);
+      console.log('[JciData] adminAddEvent() - headers:', JSON.stringify(headers));
       const r = await fetch('/api/events', {
         method: 'POST',
-        headers: adminHeaders(true),
+        headers: headers,
         body: JSON.stringify(ev)
       });
-      if (r.status === 401) throw new Error('auth');
+      console.log('[JciData] adminAddEvent() - response status:', r.status);
+      if (r.status === 401) {
+        console.error('[JciData] adminAddEvent() - 401 Unauthorized');
+        throw new Error('auth');
+      }
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
+        console.error('[JciData] adminAddEvent() - error:', err);
         throw new Error(err.error || 'Erreur serveur');
       }
       return await r.json();

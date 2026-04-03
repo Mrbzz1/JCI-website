@@ -7,6 +7,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'jci2026';
 
+console.log('[Server] ADMIN_TOKEN initialized:');
+console.log('[Server]   - From env:', !!process.env.ADMIN_TOKEN);
+console.log('[Server]   - Final token:', ADMIN_TOKEN.substring(0, 8) + '...');
+
 const rootDir = path.join(__dirname, '..');
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -17,16 +21,33 @@ app.use(express.json({ limit: '1mb' }));
 
 function getToken(req) {
   const h = req.headers['x-admin-token'];
-  if (h) return String(h);
+  if (h) {
+    console.log('[getToken] Found X-Admin-Token header');
+    return String(h);
+  }
   const auth = req.headers.authorization;
-  if (auth && /^Bearer\s+/i.test(auth)) return auth.replace(/^Bearer\s+/i, '').trim();
+  if (auth && /^Bearer\s+/i.test(auth)) {
+    console.log('[getToken] Found Authorization Bearer header');
+    return auth.replace(/^Bearer\s+/i, '').trim();
+  }
+  console.log('[getToken] No admin token found in headers');
   return '';
 }
 
 function requireAdmin(req, res, next) {
-  if (getToken(req) !== ADMIN_TOKEN) {
+  const token = getToken(req);
+  const expected = ADMIN_TOKEN;
+  const tokenReceived = token ? token.substring(0, 8) + '...' : '(empty)';
+  const tokenExpected = expected.substring(0, 8) + '...';
+  console.log('[requireAdmin] Middleware check:');
+  console.log('[requireAdmin]   - Received:', tokenReceived);
+  console.log('[requireAdmin]   - Expected:', tokenExpected);
+  console.log('[requireAdmin]   - Match:', token === expected);
+  if (token !== expected) {
+    console.log('[requireAdmin]   - DENIED (401)');
     return res.status(401).json({ error: 'Non autorisé' });
   }
+  console.log('[requireAdmin]   - APPROVED');
   next();
 }
 
@@ -72,6 +93,7 @@ app.get('/api/events', (req, res) => {
 });
 
 app.post('/api/events', requireAdmin, (req, res) => {
+  console.log('[POST /api/events] Request received - passed requireAdmin check');
   const { date, title, type, place, description } = req.body || {};
   if (!date || !String(title || '').trim() || !String(place || '').trim()) {
     return res.status(400).json({ error: 'Date, titre et lieu sont obligatoires.' });
