@@ -528,9 +528,7 @@
                 return;
             }
             loginError.hidden = true;
-            console.log('[Admin] Login - setting token:', val);
             JciData.setAdminToken(val);
-            console.log('[Admin] Token set in sessionStorage');
             loginSection.hidden = true;
             adminPanel.hidden = false;
             await updateModeUi();
