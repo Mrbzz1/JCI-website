@@ -142,6 +142,7 @@ app.post('/api/gallery', requireAdmin, upload.array('images', 40), (req, res) =>
       );
       ids.push(Number(info.lastInsertRowid));
     }
+    
   });
   run(files);
   res.json({ ids });
@@ -233,5 +234,5 @@ app.get(/^(?!\/api).*/, (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`JCI Oudref server running on port ${PORT}`);
-  console.log(`API health check: http://localhost:${PORT}/api/health`);
+  console.log(`API health check: https://jci-website-production.up.railway.app/:${PORT}/api/health`);
 });
