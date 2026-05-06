@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin — JCI Oudref</title>
+    <title>Admin — JCI Oudhref</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -12,24 +12,27 @@
 <body class="admin-body">
     <header class="admin-top">
         <div class="admin-top-inner">
-            <span class="admin-badge">Administration</span>
-            <h1 class="admin-title">JCI Oudref</h1>
-            <p class="admin-sub">Agenda et galerie</p>
+            <div class="admin-top-header-row">
+                <span class="admin-badge" data-i18n-key="adminBadge">Administration</span>
+                <button id="lang-toggle" type="button" class="lang-toggle" aria-label="Passer en anglais">🌐 EN</button>
+            </div>
+            <h1 class="admin-title" data-i18n-key="adminTitle">JCI Oudhref</h1>
+            <p class="admin-sub" data-i18n-key="adminSub">Agenda et galerie</p>
         </div>
     </header>
 
     <main class="admin-main">
         <section class="section-card admin-login-section" id="login-section">
-            <h2 class="sr-only">Connexion</h2>
+            <h2 class="sr-only" data-i18n-key="loginHeading">Connexion</h2>
             
 
             <div id="login-box" class="login-card">
                 <div class="form-row">
-                    <label for="admin-password">Mot de passe</label>
-                    <input type="password" id="admin-password" autocomplete="current-password" placeholder="Mot de passe">
+                    <label for="admin-password" data-i18n-key="loginPasswordLabel">Mot de passe</label>
+                    <input type="password" id="admin-password" autocomplete="current-password" placeholder="Mot de passe" data-i18n-placeholder="loginPasswordPlaceholder">
                 </div>
-                <button type="button" id="login-button" class="btn-primary">Se connecter</button>
-                <p id="login-error" class="form-error" role="alert" hidden>Mot de passe incorrect.</p>
+                <button type="button" id="login-button" class="btn-primary" data-i18n-key="loginButton">Se connecter</button>
+                <p id="login-error" class="form-error" role="alert" hidden data-i18n-key="loginError">Mot de passe incorrect.</p>
             </div>
         </section>
 
@@ -37,144 +40,144 @@
             <p id="admin-mode-banner" class="data-hint"></p>
 
             <div class="admin-tabs" role="tablist" aria-label="Sections admin">
-                <button type="button" class="admin-tab is-active" role="tab" aria-selected="true" data-tab="agenda">Agenda</button>
-                <button type="button" class="admin-tab" role="tab" aria-selected="false" data-tab="gallery">Galerie</button>
-                <button type="button" class="admin-tab" role="tab" aria-selected="false" data-tab="site">Site</button>
+                <button type="button" class="admin-tab is-active" role="tab" aria-selected="true" data-tab="agenda" data-i18n-key="tabAgenda">Agenda</button>
+                <button type="button" class="admin-tab" role="tab" aria-selected="false" data-tab="gallery" data-i18n-key="tabGallery">Galerie</button>
+                <button type="button" class="admin-tab" role="tab" aria-selected="false" data-tab="site" data-i18n-key="tabSite">Site</button>
             </div>
 
             <section id="agenda-admin" class="admin-tab-panel is-active" role="tabpanel">
-                <h2 class="panel-heading">Gérer l’agenda</h2>
-                <p class="section-intro">Ajoutez des dates de formations, événements et réunions.</p>
+                <h2 class="panel-heading" data-i18n-key="agendaHeading">Gérer l’agenda</h2>
+                <p class="section-intro" data-i18n-key="agendaIntro">Ajoutez des dates de formations, événements et réunions.</p>
 
                 <form id="agenda-form" class="admin-form">
                     <div class="form-row">
-                        <label for="agenda-date">Date <span class="req">*</span></label>
+                        <label for="agenda-date"><span data-i18n-key="agendaDateLabel">Date</span> <span class="req">*</span></label>
                         <input type="date" id="agenda-date" required>
                     </div>
                     <div class="form-row">
-                        <label for="agenda-title">Titre <span class="req">*</span></label>
-                        <input type="text" id="agenda-title" placeholder="Formation leadership…" required>
+                        <label for="agenda-title"><span data-i18n-key="agendaTitleLabel">Titre</span> <span class="req">*</span></label>
+                        <input type="text" id="agenda-title" placeholder="Formation leadership…" data-i18n-placeholder="agendaTitlePlaceholder" required>
                     </div>
                     <div class="form-row">
-                        <label for="agenda-type">Type</label>
+                        <label for="agenda-type" data-i18n-key="agendaTypeLabel">Type</label>
                         <select id="agenda-type">
-                            <option value="Formation">Formation</option>
-                            <option value="Événement">Événement</option>
-                            <option value="Réunion">Réunion</option>
+                            <option value="Formation" data-i18n-key="agendaTypeOptionFormation">Formation</option>
+                            <option value="Événement" data-i18n-key="agendaTypeOptionEvent">Événement</option>
+                            <option value="Réunion" data-i18n-key="agendaTypeOptionMeeting">Réunion</option>
                         </select>
                     </div>
                     <div class="form-row">
-                        <label for="agenda-place">Lieu <span class="req">*</span></label>
-                        <input type="text" id="agenda-place" placeholder="Ex. Maison des jeunes" required>
+                        <label for="agenda-place"><span data-i18n-key="agendaPlaceLabel">Lieu</span> <span class="req">*</span></label>
+                        <input type="text" id="agenda-place" placeholder="Ex. Maison des jeunes" data-i18n-placeholder="agendaPlacePlaceholder" required>
                     </div>
                     <div class="form-row">
-                        <label for="agenda-description">Description</label>
-                        <textarea id="agenda-description" rows="3" placeholder="Heure, intervenant…"></textarea>
+                        <label for="agenda-description" data-i18n-key="agendaDescriptionLabel">Description</label>
+                        <textarea id="agenda-description" rows="3" placeholder="Heure, intervenant…" data-i18n-placeholder="agendaDescriptionPlaceholder"></textarea>
                     </div>
-                    <button type="submit" class="btn-primary">Ajouter</button>
+                    <button type="submit" class="btn-primary" data-i18n-key="agendaAddButton">Ajouter</button>
                 </form>
 
                 <div id="agenda-local-actions" class="admin-actions">
-                    <button id="agenda-publish" type="button" class="btn-primary">Publier l’agenda</button>
-                    <button id="agenda-reset" type="button" class="btn-danger-outline">Annuler les brouillons</button>
+                    <button id="agenda-publish" type="button" class="btn-primary" data-i18n-key="agendaPublishButton">Publier l’agenda</button>
+                    <button id="agenda-reset" type="button" class="btn-danger-outline" data-i18n-key="agendaResetButton">Annuler les brouillons</button>
                 </div>
 
-                <h3 class="subheading">Événements</h3>
+                <h3 class="subheading" data-i18n-key="agendaEventsHeading">Événements</h3>
                 <ul id="agenda-list" class="agenda-admin-list"></ul>
             </section>
 
             <section id="gallery-admin" class="admin-tab-panel" role="tabpanel" hidden>
-                <h2 class="panel-heading">Gérer la galerie</h2>
-                <p class="section-intro">Associez des images à un événement de l’agenda.</p>
+                <h2 class="panel-heading" data-i18n-key="galleryHeading">Gérer la galerie</h2>
+                <p class="section-intro" data-i18n-key="galleryIntro">Associez des images à un événement de l’agenda.</p>
 
                 <div class="form-row">
-                    <label for="gallery-event">Événement <span class="req">*</span></label>
+                    <label for="gallery-event"><span data-i18n-key="galleryEventLabel">Événement</span> <span class="req">*</span></label>
                     <select id="gallery-event">
-                        <option value="">— Choisir un événement —</option>
+                        <option value="" data-i18n-key="galleryEventDefault">— Choisir un événement —</option>
                     </select>
                 </div>
                 <div class="form-row">
-                    <label for="gallery-files">Images (PNG, JPG…)</label>
+                    <label for="gallery-files" data-i18n-key="galleryFilesLabel">Images (PNG, JPG…)</label>
                     <input type="file" id="gallery-files" accept="image/*" multiple>
                 </div>
-                <button id="gallery-add" type="button" class="btn-primary">Ajouter à la galerie</button>
+                <button id="gallery-add" type="button" class="btn-primary" data-i18n-key="galleryAddButton">Ajouter à la galerie</button>
 
                 <div id="gallery-local-actions" class="admin-actions">
-                    <button id="gallery-publish" type="button" class="btn-primary">Publier la galerie</button>
-                    <button id="gallery-reset" type="button" class="btn-danger-outline">Annuler les brouillons</button>
+                    <button id="gallery-publish" type="button" class="btn-primary" data-i18n-key="galleryPublishButton">Publier la galerie</button>
+                    <button id="gallery-reset" type="button" class="btn-danger-outline" data-i18n-key="galleryResetButton">Annuler les brouillons</button>
                 </div>
 
-                <h3 class="subheading">Aperçu</h3>
+                <h3 class="subheading" data-i18n-key="galleryPreviewHeading">Aperçu</h3>
                 <div id="gallery-grid" class="gallery-grid-root"></div>
             </section>
 
             <section id="site-admin" class="admin-tab-panel" role="tabpanel" hidden>
-                <h2 class="panel-heading">Contenu du site</h2>
-                <p class="section-intro">Gérez les chiffres et la section Partenaires / Sponsors.</p>
+                <h2 class="panel-heading" data-i18n-key="siteHeading">Contenu du site</h2>
+                <p class="section-intro" data-i18n-key="siteIntro">Gérez les chiffres et la section Partenaires / Sponsors.</p>
 
-                <h3 class="subheading">Nos chiffres</h3>
+                <h3 class="subheading" data-i18n-key="statsSectionHeading">Nos chiffres</h3>
                 <form id="stats-form" class="admin-form">
                     <div class="form-row">
-                        <label for="stat-actions">Actions</label>
+                        <label for="stat-actions" data-i18n-key="statsActionsLabel">Actions</label>
                         <input type="number" id="stat-actions" min="0" step="1" value="0">
                     </div>
                     <div class="form-row">
-                        <label for="stat-formations">Formations</label>
+                        <label for="stat-formations" data-i18n-key="statsFormationsLabel">Formations</label>
                         <input type="number" id="stat-formations" min="0" step="1" value="0">
                     </div>
                     <div class="form-row">
-                        <label for="stat-partenariats">Partenariats</label>
+                        <label for="stat-partenariats" data-i18n-key="statsPartenariatsLabel">Partenariats</label>
                         <input type="number" id="stat-partenariats" min="0" step="1" value="0">
                     </div>
-                    <button type="submit" class="btn-primary">Enregistrer</button>
+                    <button type="submit" class="btn-primary" data-i18n-key="statsSaveButton">Enregistrer</button>
                 </form>
 
                 <div id="stats-local-actions" class="admin-actions">
-                    <button id="stats-publish" type="button" class="btn-primary">Publier les chiffres</button>
-                    <button id="stats-reset" type="button" class="btn-danger-outline">Annuler les brouillons</button>
+                    <button id="stats-publish" type="button" class="btn-primary" data-i18n-key="statsPublishButton">Publier les chiffres</button>
+                    <button id="stats-reset" type="button" class="btn-danger-outline" data-i18n-key="statsResetButton">Annuler les brouillons</button>
                 </div>
 
-                <h3 class="subheading">Partenaires & Sponsors</h3>
+                <h3 class="subheading" data-i18n-key="partnersSectionHeading">Partenaires & Sponsors</h3>
                 <form id="partner-form" class="admin-form">
                     <div class="form-row">
-                        <label for="partner-kind">Type</label>
+                        <label for="partner-kind" data-i18n-key="partnerKindLabel">Type</label>
                         <select id="partner-kind">
-                            <option value="sponsor">Sponsor</option>
-                            <option value="partner">Partenaire</option>
+                            <option value="sponsor" data-i18n-key="partnerKindOptionSponsor">Sponsor</option>
+                            <option value="partner" data-i18n-key="partnerKindOptionPartner">Partenaire</option>
                         </select>
                     </div>
                     <div class="form-row">
-                        <label for="partner-name">Nom <span class="req">*</span></label>
-                        <input type="text" id="partner-name" required placeholder="Nom du partenaire">
+                        <label for="partner-name"><span data-i18n-key="partnerNameLabel">Nom</span> <span class="req">*</span></label>
+                        <input type="text" id="partner-name" required placeholder="Nom du partenaire" data-i18n-placeholder="partnerNamePlaceholder">
                     </div>
                     <div class="form-row">
-                        <label for="partner-url">Lien (optionnel)</label>
-                        <input type="url" id="partner-url" placeholder="https://...">
+                        <label for="partner-url" data-i18n-key="partnerUrlLabel">Lien (optionnel)</label>
+                        <input type="url" id="partner-url" placeholder="https://..." data-i18n-placeholder="partnerUrlPlaceholder">
                     </div>
                     <div class="form-row">
-                        <label for="partner-order">Ordre (optionnel)</label>
+                        <label for="partner-order" data-i18n-key="partnerOrderLabel">Ordre (optionnel)</label>
                         <input type="number" id="partner-order" min="0" step="1" value="0">
                     </div>
                     <div class="form-row">
-                        <label for="partner-logo">Logo (PNG/JPG) <span class="req">*</span></label>
+                        <label for="partner-logo"><span data-i18n-key="partnerLogoLabel">Logo (PNG/JPG)</span> <span class="req">*</span></label>
                         <input type="file" id="partner-logo" accept="image/*" required>
                     </div>
-                    <button type="submit" class="btn-primary">Ajouter</button>
+                    <button type="submit" class="btn-primary" data-i18n-key="partnerAddButton">Ajouter</button>
                 </form>
 
                 <div id="partners-local-actions" class="admin-actions">
-                    <button id="partners-publish" type="button" class="btn-primary">Publier partenaires</button>
-                    <button id="partners-reset" type="button" class="btn-danger-outline">Annuler les brouillons</button>
+                    <button id="partners-publish" type="button" class="btn-primary" data-i18n-key="partnersPublishButton">Publier partenaires</button>
+                    <button id="partners-reset" type="button" class="btn-danger-outline" data-i18n-key="partnersResetButton">Annuler les brouillons</button>
                 </div>
 
-                <h3 class="subheading">Liste</h3>
+                <h3 class="subheading" data-i18n-key="partnersListHeading">Liste</h3>
                 <div id="partners-list" class="gallery-grid-root"></div>
             </section>
         </div>
     </main>
 
     <footer class="site-footer admin-footer-note">
-        <p>En production, utilisez HTTPS et un mot de passe fort côté serveur (<code>ADMIN_TOKEN</code>).</p>
+        <p data-i18n-key="footerText">En production, utilisez HTTPS et un mot de passe fort côté serveur (<code>ADMIN_TOKEN</code>).</p>
     </footer>
 
     <script src="js/jci-data.js"></script>
@@ -230,6 +233,230 @@
         const partnersPublishButton = document.getElementById('partners-publish');
         const partnersResetButton = document.getElementById('partners-reset');
         const partnersList = document.getElementById('partners-list');
+        const langToggleButton = document.getElementById('lang-toggle');
+
+        let currentLang = localStorage.getItem('adminLang') === 'en' ? 'en' : 'fr';
+
+        const translations = {
+            fr: {
+                adminBadge: 'Administration',
+                adminTitle: 'JCI Oudhref',
+                adminSub: 'Agenda et galerie',
+                loginHeading: 'Connexion',
+                loginPasswordLabel: 'Mot de passe',
+                loginPasswordPlaceholder: 'Mot de passe',
+                loginButton: 'Se connecter',
+                loginError: 'Mot de passe incorrect.',
+                tabAgenda: 'Agenda',
+                tabGallery: 'Galerie',
+                tabSite: 'Site',
+                agendaHeading: 'Gérer l’agenda',
+                agendaIntro: 'Ajoutez des dates de formations, événements et réunions.',
+                agendaDateLabel: 'Date',
+                agendaTitleLabel: 'Titre',
+                agendaTitlePlaceholder: 'Formation leadership…',
+                agendaTypeLabel: 'Type',
+                agendaTypeOptionFormation: 'Formation',
+                agendaTypeOptionEvent: 'Événement',
+                agendaTypeOptionMeeting: 'Réunion',
+                agendaPlaceLabel: 'Lieu',
+                agendaPlacePlaceholder: 'Ex. Maison des jeunes',
+                agendaDescriptionLabel: 'Description',
+                agendaDescriptionPlaceholder: 'Heure, intervenant…',
+                agendaAddButton: 'Ajouter',
+                agendaPublishButton: 'Publier l’agenda',
+                agendaResetButton: 'Annuler les brouillons',
+                agendaEventsHeading: 'Événements',
+                galleryHeading: 'Gérer la galerie',
+                galleryIntro: 'Associez des images à un événement de l’agenda.',
+                galleryEventLabel: 'Événement',
+                galleryEventDefault: '— Choisir un événement —',
+                galleryFilesLabel: 'Images (PNG, JPG…)',
+                galleryAddButton: 'Ajouter à la galerie',
+                galleryPublishButton: 'Publier la galerie',
+                galleryResetButton: 'Annuler les brouillons',
+                galleryPreviewHeading: 'Aperçu',
+                siteHeading: 'Contenu du site',
+                siteIntro: 'Gérez les chiffres et la section Partenaires / Sponsors.',
+                statsSectionHeading: 'Nos chiffres',
+                statsActionsLabel: 'Actions',
+                statsFormationsLabel: 'Formations',
+                statsPartenariatsLabel: 'Partenariats',
+                statsSaveButton: 'Enregistrer',
+                statsPublishButton: 'Publier les chiffres',
+                statsResetButton: 'Annuler les brouillons',
+                partnersSectionHeading: 'Partenaires & Sponsors',
+                partnerKindLabel: 'Type',
+                partnerKindOptionSponsor: 'Sponsor',
+                partnerKindOptionPartner: 'Partenaire',
+                partnerNameLabel: 'Nom',
+                partnerNamePlaceholder: 'Nom du partenaire',
+                partnerUrlLabel: 'Lien (optionnel)',
+                partnerUrlPlaceholder: 'https://...',
+                partnerOrderLabel: 'Ordre (optionnel)',
+                partnerLogoLabel: 'Logo (PNG/JPG)',
+                partnerAddButton: 'Ajouter',
+                partnersPublishButton: 'Publier partenaires',
+                partnersResetButton: 'Annuler les brouillons',
+                partnersListHeading: 'Liste',
+                footerText: 'En production, utilisez HTTPS et un mot de passe fort côté serveur (ADMIN_TOKEN).',
+                modeBrowser: 'Mode navigateur : utilisez « Publier » pour rendre les changements visibles sur le site (localStorage).',
+                modeServer: 'Mode serveur : les ajouts et suppressions sont enregistrés dans la base SQLite.',
+                deleteButton: 'Supprimer',
+                galleryPhotoCountOne: '1 photo',
+                galleryPhotoCountMany: '{n} photos',
+                sessionExpired: 'Session expirée. Reconnectez-vous.',
+                sessionExpiredShort: 'Session expirée.',
+                errorGeneric: 'Erreur',
+                eventSavedServer: 'Événement enregistré sur le serveur.',
+                imagesSavedServer: 'Images enregistrées sur le serveur.',
+                partnerSavedServer: 'Partenaire enregistré sur le serveur.',
+                statsSavedServer: 'Chiffres enregistrés sur le serveur.',
+                agendaPublished: 'Agenda publié (localStorage). Actualisez la page d’accueil.',
+                galleryPublished: 'Galerie publiée (localStorage). Actualisez la page d’accueil.',
+                partnersPublished: 'Partenaires publiés (localStorage). Actualisez la page d’accueil.',
+                galleryChooseEvent: 'Choisissez un événement pour ces photos.',
+                otherLabel: 'Autre',
+                noPartnersMessage: 'Aucun partenaire/sponsor pour le moment.',
+                photoAlt: 'Photo',
+                logoAlt: 'Logo'
+            },
+            en: {
+                adminBadge: 'Administration',
+                adminTitle: 'JCI Oudhref',
+                adminSub: 'Agenda and gallery',
+                loginHeading: 'Login',
+                loginPasswordLabel: 'Password',
+                loginPasswordPlaceholder: 'Password',
+                loginButton: 'Sign in',
+                loginError: 'Incorrect password.',
+                tabAgenda: 'Agenda',
+                tabGallery: 'Gallery',
+                tabSite: 'Site',
+                agendaHeading: 'Manage agenda',
+                agendaIntro: 'Add training dates, events, and meetings.',
+                agendaDateLabel: 'Date',
+                agendaTitleLabel: 'Title',
+                agendaTitlePlaceholder: 'Leadership training…',
+                agendaTypeLabel: 'Type',
+                agendaTypeOptionFormation: 'Training',
+                agendaTypeOptionEvent: 'Event',
+                agendaTypeOptionMeeting: 'Meeting',
+                agendaPlaceLabel: 'Location',
+                agendaPlacePlaceholder: 'Ex. Youth center',
+                agendaDescriptionLabel: 'Description',
+                agendaDescriptionPlaceholder: 'Time, speaker…',
+                agendaAddButton: 'Add',
+                agendaPublishButton: 'Publish agenda',
+                agendaResetButton: 'Discard drafts',
+                agendaEventsHeading: 'Events',
+                galleryHeading: 'Manage gallery',
+                galleryIntro: 'Attach images to an agenda event.',
+                galleryEventLabel: 'Event',
+                galleryEventDefault: '— Choose an event —',
+                galleryFilesLabel: 'Images (PNG, JPG…)',
+                galleryAddButton: 'Add to gallery',
+                galleryPublishButton: 'Publish gallery',
+                galleryResetButton: 'Discard drafts',
+                galleryPreviewHeading: 'Preview',
+                siteHeading: 'Site content',
+                siteIntro: 'Manage stats and the Partners / Sponsors section.',
+                statsSectionHeading: 'Our stats',
+                statsActionsLabel: 'Actions',
+                statsFormationsLabel: 'Trainings',
+                statsPartenariatsLabel: 'Partnerships',
+                statsSaveButton: 'Save',
+                statsPublishButton: 'Publish stats',
+                statsResetButton: 'Discard drafts',
+                partnersSectionHeading: 'Partners & Sponsors',
+                partnerKindLabel: 'Type',
+                partnerKindOptionSponsor: 'Sponsor',
+                partnerKindOptionPartner: 'Partner',
+                partnerNameLabel: 'Name',
+                partnerNamePlaceholder: 'Partner name',
+                partnerUrlLabel: 'Link (optional)',
+                partnerUrlPlaceholder: 'https://...',
+                partnerOrderLabel: 'Order (optional)',
+                partnerLogoLabel: 'Logo (PNG/JPG)',
+                partnerAddButton: 'Add',
+                partnersPublishButton: 'Publish partners',
+                partnersResetButton: 'Discard drafts',
+                partnersListHeading: 'List',
+                footerText: 'In production, use HTTPS and a strong server password (ADMIN_TOKEN).',
+                modeBrowser: 'Browser mode: use “Publish” to make changes visible on the site (localStorage).',
+                modeServer: 'Server mode: additions and deletions are saved to SQLite.',
+                deleteButton: 'Delete',
+                galleryPhotoCountOne: '1 photo',
+                galleryPhotoCountMany: '{n} photos',
+                sessionExpired: 'Session expired. Please sign in again.',
+                sessionExpiredShort: 'Session expired.',
+                errorGeneric: 'Error',
+                eventSavedServer: 'Event saved to server.',
+                imagesSavedServer: 'Images saved to server.',
+                partnerSavedServer: 'Partner saved to server.',
+                statsSavedServer: 'Stats saved to server.',
+                agendaPublished: 'Agenda published (localStorage). Refresh the homepage.',
+                galleryPublished: 'Gallery published (localStorage). Refresh the homepage.',
+                partnersPublished: 'Partners published (localStorage). Refresh the homepage.',
+                galleryChooseEvent: 'Choose an event for these photos.',
+                otherLabel: 'Other',
+                noPartnersMessage: 'No partners/sponsors yet.',
+                photoAlt: 'Photo',
+                logoAlt: 'Logo'
+            }
+        };
+
+        function t(key, vars = {}) {
+            const value = translations[currentLang][key] || translations.fr[key] || key;
+            return typeof value === 'string'
+                ? value.replace(/\{n\}/g, String(vars.n || ''))
+                : value;
+        }
+
+        function translateEventType(type) {
+            const mapping = {
+                Formation: 'agendaTypeOptionFormation',
+                'Événement': 'agendaTypeOptionEvent',
+                Réunion: 'agendaTypeOptionMeeting',
+                Training: 'agendaTypeOptionFormation',
+                Event: 'agendaTypeOptionEvent',
+                Meeting: 'agendaTypeOptionMeeting'
+            };
+            return t(mapping[type] || type);
+        }
+
+        function applyTranslations() {
+            document.documentElement.lang = currentLang;
+            document.querySelectorAll('[data-i18n-key]').forEach((el) => {
+                el.textContent = t(el.dataset.i18nKey);
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+                el.placeholder = t(el.dataset.i18nPlaceholder);
+            });
+            if (langToggleButton) {
+                langToggleButton.textContent = currentLang === 'fr' ? '🌐 EN' : '🌐 FR';
+                langToggleButton.setAttribute('aria-label', currentLang === 'fr' ? 'Passer en anglais' : 'Switch to French');
+            }
+            if (modeBanner) {
+                updateModeUi();
+            }
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('adminLang', lang);
+            applyTranslations();
+        }
+
+        function toggleLanguage() {
+            setLanguage(currentLang === 'fr' ? 'en' : 'fr');
+        }
+
+        if (langToggleButton) {
+            langToggleButton.addEventListener('click', toggleLanguage);
+        }
+
+        applyTranslations();
 
         function showToast(msg) {
             alert(msg);
@@ -245,9 +472,7 @@
         async function updateModeUi() {
             const server = await JciData.usesServer();
             if (modeBanner) {
-                modeBanner.textContent = server
-                    ? 'Mode serveur : les ajouts et suppressions sont enregistrés dans la base SQLite.'
-                    : 'Mode navigateur : utilisez « Publier » pour rendre les changements visibles sur le site (localStorage).';
+                modeBanner.textContent = server ? t('modeServer') : t('modeBrowser');
             }
             setLocalActionsVisible(!server);
         }
@@ -343,7 +568,7 @@
                 line.appendChild(dateSpan);
                 line.appendChild(document.createTextNode(' — '));
                 const strong = document.createElement('strong');
-                strong.textContent = ev.type || '';
+                strong.textContent = translateEventType(ev.type);
                 line.appendChild(strong);
                 line.appendChild(document.createTextNode(' : '));
                 line.appendChild(document.createTextNode(ev.title || ''));
@@ -352,7 +577,7 @@
                 const placeRow = document.createElement('div');
                 placeRow.className = 'agenda-desc';
                 const placeLabel = document.createElement('strong');
-                placeLabel.textContent = 'Lieu : ';
+                placeLabel.textContent = t('agendaPlaceLabel') + ' : ';
                 placeRow.appendChild(placeLabel);
                 placeRow.appendChild(document.createTextNode(ev.place || '—'));
                 li.appendChild(placeRow);
@@ -367,7 +592,7 @@
                 const del = document.createElement('button');
                 del.type = 'button';
                 del.className = 'danger';
-                del.textContent = 'Supprimer';
+                del.textContent = t('deleteButton');
                 del.addEventListener('click', async () => {
                     try {
                         if (server) {
@@ -379,8 +604,8 @@
                         await populateGalleryEventsSelect();
                         await renderGalleryAdmin();
                     } catch (e) {
-                        if (e.message === 'auth') showToast('Session expirée. Reconnectez-vous.');
-                        else showToast(e.message || 'Erreur');
+                        if (e.message === 'auth') showToast(t('sessionExpired'));
+                        else showToast(e.message || t('errorGeneric'));
                     }
                 });
                 li.appendChild(del);
@@ -402,7 +627,7 @@
 
             Object.keys(byEvent).forEach((key) => {
                 const group = byEvent[key];
-                const title = group[0].eventTitle || 'Autre';
+                const title = group[0].eventTitle || t('otherLabel');
 
                 const details = document.createElement('details');
                 details.className = 'gallery-group gallery-folder';
@@ -423,7 +648,7 @@
                 const countSpan = document.createElement('span');
                 countSpan.className = 'gallery-folder-count';
                 const n = group.length;
-                countSpan.textContent = n === 1 ? '1 photo' : n + ' photos';
+                countSpan.textContent = n === 1 ? t('galleryPhotoCountOne') : t('galleryPhotoCountMany', { n });
 
                 summary.appendChild(icon);
                 summary.appendChild(nameSpan);
@@ -437,7 +662,7 @@
                     card.className = 'gallery-card';
                     const im = document.createElement('img');
                     im.src = item.src;
-                    im.alt = item.name || 'Photo';
+                    im.alt = item.name || t('photoAlt');
                     im.loading = 'lazy';
                     card.appendChild(im);
                     const actions = document.createElement('div');
@@ -445,15 +670,15 @@
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'danger';
-                    btn.textContent = 'Supprimer';
+                    btn.textContent = t('deleteButton');
                     btn.addEventListener('click', async () => {
                         try {
                             const id = server ? item.dbId : item.localIndex;
                             await JciData.adminDeleteGalleryImage(id);
                             await renderGalleryAdmin();
                         } catch (e) {
-                            if (e.message === 'auth') showToast('Session expirée.');
-                            else showToast(e.message || 'Erreur');
+                            if (e.message === 'auth') showToast(t('sessionExpiredShort'));
+                            else showToast(e.message || t('errorGeneric'));
                         }
                     });
                     actions.appendChild(btn);
@@ -475,7 +700,7 @@
             const rows = (items || []).slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
             if (!rows.length) {
-                partnersList.innerHTML = '<p class="muted">Aucun partenaire/sponsor pour le moment.</p>';
+                partnersList.innerHTML = '<p class="muted">' + t('noPartnersMessage') + '</p>';
                 return;
             }
 
@@ -485,7 +710,7 @@
 
                 const im = document.createElement('img');
                 im.src = item.src;
-                im.alt = item.name || 'Logo';
+                im.alt = item.name || t('logoAlt');
                 im.loading = 'lazy';
                 card.appendChild(im);
 
@@ -497,21 +722,21 @@
                 const left = document.createElement('div');
                 left.style.fontWeight = '700';
                 left.style.color = 'var(--color-primary)';
-                left.textContent = (item.kind === 'sponsor' ? 'Sponsor' : 'Partenaire') + ' — ' + (item.name || '');
+                left.textContent = t(item.kind === 'sponsor' ? 'partnerKindOptionSponsor' : 'partnerKindOptionPartner') + ' — ' + (item.name || '');
                 caption.appendChild(left);
 
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'danger';
-                btn.textContent = 'Supprimer';
+                btn.textContent = t('deleteButton');
                 btn.addEventListener('click', async () => {
                     try {
                         const id = server ? item.dbId : item.localIndex;
                         await JciData.adminDeletePartner(id);
                         await renderPartnersAdmin();
                     } catch (e) {
-                        if (e.message === 'auth') showToast('Session expirée.');
-                        else showToast(e.message || 'Erreur');
+                        if (e.message === 'auth') showToast(t('sessionExpiredShort'));
+                        else showToast(e.message || t('errorGeneric'));
                     }
                 });
                 caption.appendChild(btn);
@@ -553,10 +778,10 @@
                 await renderEvents();
                 await populateGalleryEventsSelect();
                 const server = await JciData.usesServer();
-                if (server) showToast('Événement enregistré sur le serveur.');
+                if (server) showToast(t('eventSavedServer'));
             } catch (err) {
-                if (err.message === 'auth') showToast('Session expirée. Reconnectez-vous.');
-                else showToast(err.message || 'Erreur');
+                if (err.message === 'auth') showToast(t('sessionExpired'));
+                else showToast(err.message || t('errorGeneric'));
             }
         });
 
@@ -566,13 +791,13 @@
 
             const selectedKey = galleryEventSelect.value;
             if (!selectedKey) {
-                showToast('Choisissez un événement pour ces photos.');
+                showToast(t('galleryChooseEvent'));
                 return;
             }
 
             const events = await JciData.adminListEvents();
             const matched = events.find((ev) => eventKey(ev) === selectedKey);
-            const eventTitle = matched ? (matched.date + ' — ' + matched.title) : 'Autre';
+            const eventTitle = matched ? (matched.date + ' — ' + matched.title) : t('otherLabel');
 
             try {
                 await JciData.adminAddGalleryImages({
@@ -583,10 +808,10 @@
                 galleryFilesInput.value = '';
                 await renderGalleryAdmin();
                 const server = await JciData.usesServer();
-                if (server) showToast('Images enregistrées sur le serveur.');
+                if (server) showToast(t('imagesSavedServer'));
             } catch (err) {
-                if (err.message === 'auth') showToast('Session expirée.');
-                else showToast(err.message || 'Erreur');
+                if (err.message === 'auth') showToast(t('sessionExpiredShort'));
+                else showToast(err.message || t('errorGeneric'));
             }
         });
 
@@ -601,10 +826,10 @@
                 try {
                     await JciData.adminUpdateSiteStats(stats);
                     const server = await JciData.usesServer();
-                    if (server) showToast('Chiffres enregistrés sur le serveur.');
+                    if (server) showToast(t('statsSavedServer'));
                 } catch (err) {
-                    if (err.message === 'auth') showToast('Session expirée. Reconnectez-vous.');
-                    else showToast(err.message || 'Erreur');
+                    if (err.message === 'auth') showToast(t('sessionExpired'));
+                    else showToast(err.message || t('errorGeneric'));
                 }
             });
         }
@@ -618,7 +843,7 @@
                 };
                 JciData.saveDraftSiteStats(stats);
                 JciData.publishSiteStatsLocal();
-                showToast('Chiffres publiés (localStorage). Actualisez la page d’accueil.');
+                showToast(t('agendaPublished'));
             });
         }
 
@@ -647,10 +872,10 @@
                     partnerForm.reset();
                     await renderPartnersAdmin();
                     const server = await JciData.usesServer();
-                    if (server) showToast('Partenaire enregistré sur le serveur.');
+                    if (server) showToast(t('partnerSavedServer'));
                 } catch (err) {
-                    if (err.message === 'auth') showToast('Session expirée.');
-                    else showToast(err.message || 'Erreur');
+                    if (err.message === 'auth') showToast(t('sessionExpiredShort'));
+                    else showToast(err.message || t('errorGeneric'));
                 }
             });
         }
@@ -659,7 +884,7 @@
             partnersPublishButton.addEventListener('click', () => {
                 JciData.publishPartnersLocal();
                 renderPartnersAdmin();
-                showToast('Partenaires publiés (localStorage). Actualisez la page d’accueil.');
+                showToast(t('partnersPublished'));
             });
         }
 
@@ -674,7 +899,7 @@
             JciData.publishAgendaLocal();
             renderEvents();
             populateGalleryEventsSelect();
-            showToast('Agenda publié (localStorage). Actualisez la page d’accueil.');
+            showToast(t('agendaPublished'));
         });
 
         agendaResetButton.addEventListener('click', () => {
@@ -685,7 +910,7 @@
         galleryPublishButton.addEventListener('click', () => {
             JciData.publishGalleryLocal();
             renderGalleryAdmin();
-            showToast('Galerie publiée (localStorage). Actualisez la page d’accueil.');
+            showToast(t('galleryPublished'));
         });
 
         galleryResetButton.addEventListener('click', () => {

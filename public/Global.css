@@ -93,7 +93,7 @@ h1, h2, h3,
 }
 
 #nihow {
-    height: 56px;
+    height: 80px;
     width: auto;
     filter: brightness(1.1) contrast(1.08);
     object-fit: contain;
@@ -379,9 +379,86 @@ main {
     display: block;
 }
 
+.executive-board-top,
+.executive-board-middle,
+.executive-board-bottom {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.executive-board-top {
+    margin-top: 12px;
+}
+
+.executive-board-bottom {
+    margin-bottom: 0;
+    flex-wrap: wrap;
+}
+
+.member-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.72);
+    border-radius: 20px;
+    border: 1px solid rgba(var(--color-primary-rgb), 0.12);
+    box-shadow: 0 2px 12px rgba(var(--color-primary-rgb), 0.06);
+}
+
+.member-photo {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.member-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.member-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 4px;
+}
+
+.member-position {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+    margin: 0;
+}
+
 @media (max-width: 700px) {
     .figure-frame img {
         max-height: 520px;
+    }
+
+    .executive-board-top,
+    .executive-board-middle,
+    .executive-board-bottom {
+        gap: 12px;
+    }
+
+    .member-photo {
+        width: 70px;
+        height: 70px;
+    }
+
+    .member-card {
+        padding: 10px;
     }
 }
 
@@ -906,6 +983,30 @@ button.danger:hover {
 .admin-top {
     padding: 32px 20px 0;
     text-align: center;
+}
+
+.admin-top-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.lang-toggle {
+    border: 1px solid rgba(38, 53, 87, 0.2);
+    background: white;
+    color: var(--color-text);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.lang-toggle:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.92);
 }
 
 .admin-top-inner {

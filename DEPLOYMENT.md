@@ -63,7 +63,7 @@ npm start
 ## Verification
 The server successfully starts and logs:
 ```
-JCI Oudref server running on port 3000
+JCI Oudhref server running on port 3000
 API health check: http://localhost:3000/api/health
 ```
 

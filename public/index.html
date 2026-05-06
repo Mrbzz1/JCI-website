@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JCI Oudref</title>
+    <title>JCI Oudhref</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -14,19 +14,19 @@
     <header class="site-header">
         <div class="header-inner">
             <a href="#mission" class="brand">
-                <img src="jci.png" alt="Logo JCI Oudref" id="nihow" width="56" height="56">
-                <span class="brand-text">JCI Oudref</span>
+                <img src="jci.png" alt="Logo JCI Oudhref" id="nihow" width="56" height="56">
             </a>
+            <button id="lang-toggle" type="button" class="lang-toggle" aria-label="Passer en anglais">🌐 EN</button>
             <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false"></button>
-            <nav class="site-nav" id="site-nav" aria-label="Navigation principale">
+            <nav class="site-nav" id="site-nav" aria-label="" data-i18n-label-key="mainNavigationLabel">
                 <ul>
-                    <li><a href="#mission">Mission </a></li>
-                <li><a href="#credo">Credo</a></li>
-                <li><a href="#bureauex">Bureau exécutif</a></li>
-                <li><a href="#bureaudir">Bureau directeur</a></li>
-                <li><a href="#prochains">Prochains événements</a></li>
-                <li><a href="#agenda">Agenda</a></li>
-                <li><a href="#galerie">Galerie</a></li>
+                    <li><a href="#mission" data-i18n-key="navMission">Mission</a></li>
+                <li><a href="#credo" data-i18n-key="navCredo">Credo</a></li>
+                <li><a href="#bureauex" data-i18n-key="navExecutiveBoard">Bureau exécutif</a></li>
+                <li><a href="#bureaudir" data-i18n-key="navDirectorsBoard">Bureau directeur</a></li>
+                <li><a href="#prochains" data-i18n-key="navUpcomingEvents">Prochains événements</a></li>
+                <li><a href="#agenda" data-i18n-key="navAgenda">Agenda</a></li>
+                <li><a href="#galerie" data-i18n-key="navGallery">Galerie</a></li>
             </ul>
         </nav>
         </div>
@@ -34,32 +34,32 @@
 
     <main>
         <section id="mission" class="section-card section-hero">
-            <p class="eyebrow">Jeune Chambre Internationale</p>
-            <h1>JCI Oudref</h1>
-            <p class="lead">
+            <p class="eyebrow" data-i18n-key="heroEyebrow">Jeune Chambre Internationale</p>
+            <h1 data-i18n-key="heroTitle">JCI Oudhref</h1>
+            <p class="lead" data-i18n-key="heroLead">
                 Organisation de jeunes citoyens actifs qui créent un impact positif
-                dans la communauté d’Oudref — leadership, service et développement durable.
+                dans la communauté d’Oudhref — leadership, service et développement durable.
             </p>
             <div class="mission-vision-grid">
                 <article class="mission-vision-item">
-            <h2>Notre mission</h2>
-            <p>
+            <h2 data-i18n-key="missionHeading">Notre mission</h2>
+            <p data-i18n-key="missionText">
                     Offrir aux jeunes leaders des opportunités de développement du leadership
                 en leur donnant la capacité de créer des changements positifs.
             </p>
                 </article>
                 <article class="mission-vision-item">
-                    <h2>Notre vision</h2>
-                    <p>
+                    <h2 data-i18n-key="visionHeading">Notre vision</h2>
+                    <p data-i18n-key="visionText">
                         Etre le principal réseau mondial de jeunes leaders.
                     </p>
                 </article>
             </div>
 
             <div id="credo" class="credo-showcase" tabindex="-1">
-                <h2 class="credo-title">Notre credo</h2>
+                <h2 class="credo-title" data-i18n-key="credoHeading">Notre credo</h2>
                 <blockquote class="credo-quote">
-            <p>
+            <p data-i18n-html-key="credoText">
                 Nous croyons,<br>
                 Que la foi en Dieu donne à la vie son véritable sens <br>
                 Que la fraternité humaine transcende la souveraineté des nations <br>
@@ -73,85 +73,173 @@
         </section>
 
         <section id="bureauex" class="section-card">
-            <h2>Bureau exécutif</h2>
-            <figure class="figure-frame">
-                <img src="bureauexecutif.jpg" alt="Bureau exécutif JCI Oudref" loading="lazy">
-            </figure>
+            <h2 data-i18n-key="executiveBoardHeading">Bureau exécutif</h2>
+            <div class="executive-board-top">
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/sana.png" alt="Sana LTAIEF">
+                    </div>
+                    <h3 class="member-name">Sana LTAIEF</h3>
+                    <p class="member-position">Présidente</p>
+                </div>
+            </div>
+            <div class="executive-board-middle">
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/rawya.png" alt="Rawya CHAABAINE">
+                    </div>
+                    <h3 class="member-name">Rawya CHAABAINE</h3>
+                    <p class="member-position">VPRE</p>
+                </div>
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/untitled-1.png" alt="Saleh Bourara">
+                    </div>
+                    <h3 class="member-name">Saleh Bourara</h3>
+                    <p class="member-position">PPI</p>
+                </div>
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/nada.png" alt="Nada TOUMI">
+                    </div>
+                    <h3 class="member-name">Nada TOUMI</h3>
+                    <p class="member-position">Conseillère juridique</p>
+                </div>
+            </div>
+            <div class="executive-board-bottom">
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/WhatsAppImage2026-03-04at21.46.38.png" alt="Mohamed Chabene">
+                    </div>
+                    <h3 class="member-name">Mohamed Chabene</h3>
+                    <p class="member-position">Trisorier</p>
+                </div>
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/med romdhan.png" alt="Mohamed Belgacem ROMDHANE">
+                    </div>
+                    <h3 class="member-name">Mohamed Belgacem ROMDHANE</h3>
+                    <p class="member-position">VPPRE</p>
+                </div>
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/arij.png" alt="Arij NAJEH">
+                    </div>
+                    <h3 class="member-name">Arij NAJEH</h3>
+                    <p class="member-position">Secretaire generale</p>
+                </div>
+            </div>
         </section>
 
         <section id="bureaudir" class="section-card">
-            <h2>Bureau directeur</h2>
-            <figure class="figure-frame">
-                <img src="bureaudirecteur.png" alt="Bureau directeur JCI Oudref" loading="lazy">
-            </figure>
+            <h2 data-i18n-key="directorsBoardHeading">Bureau directeur</h2>
+            <div class="executive-board-top">
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/bureauDir/yassin.png" alt="Yassine Chattawi">
+                    </div>
+                    <h3 class="member-name">Yassine CHATTAWI</h3>
+                    <p class="member-position">Directeur exécutif</p>
+                </div>
+            </div>
+            <div class="executive-board-middle">
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/bureauDir/fatma.png" alt="Fatma Haj Belgacem">
+                    </div>
+                    <h3 class="member-name">Fatma HAJ BELGACEM</h3>
+                    <p class="member-position">C.SPI</p>
+                </div>
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/bureauDir/narmin.png" alt="Nermine Romdhane">
+                    </div>
+                    <h3 class="member-name">Nermine ROMDHANE</h3>
+                    <p class="member-position">C.récompences</p>
+                </div>
+            </div>
+            <div class="executive-board-bottom">
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/bureauDir/oussama.png" alt="Oussama Bezzzaouia">
+                    </div>
+                    <h3 class="member-name">Oussama BEZZAOUIA</h3>
+                    <p class="member-position">C.logistiques</p>
+                </div>
+                <div class="member-card">
+                    <div class="member-photo">
+                        <img src="../photos pro/bureauDir/youssef.png" alt="Youssef Lassoued">
+                    </div>
+                    <h3 class="member-name">Youssef LASSOUED</h3>
+                    <p class="member-position">C.media</p>
+                </div>
+            </div>
         </section>
 
         <section id="chiffres" class="section-card">
-            <h2>Nos chiffres</h2>
-            <p class="section-intro">Actions, formations et partenariats.</p>
+            <h2 data-i18n-key="statsHeading">Nos chiffres</h2>
+            <p class="section-intro" data-i18n-key="statsIntro">Actions, formations et partenariats.</p>
             <div id="stats-grid" class="stats-grid" aria-live="polite">
                 <div class="stats-card">
                     <div class="stats-value" data-stat="actions">—</div>
-                    <div class="stats-label">Actions</div>
+                    <div class="stats-label" data-i18n-key="statActionsLabel">Actions</div>
                 </div>
                 <div class="stats-card">
                     <div class="stats-value" data-stat="formations">—</div>
-                    <div class="stats-label">Formations</div>
+                    <div class="stats-label" data-i18n-key="statFormationsLabel">Formations</div>
                 </div>
                 <div class="stats-card">
                     <div class="stats-value" data-stat="partenariats">—</div>
-                    <div class="stats-label">Partenariats</div>
+                    <div class="stats-label" data-i18n-key="statPartnershipsLabel">Partenariats</div>
                 </div>
             </div>
         </section>
 
         <section id="prochains" class="section-card">
-            <h2>Prochains événements</h2>
-            <p class="section-intro">Les prochaines formations, événements et réunions.</p>
+            <h2 data-i18n-key="upcomingHeading">Prochains événements</h2>
+            <p class="section-intro" data-i18n-key="upcomingIntro">Les prochaines formations, événements et réunions.</p>
             <div id="upcoming-empty" class="empty-state" hidden>
-                <p>Aucun événement à venir pour le moment.</p>
+                <p data-i18n-key="upcomingEmpty">Aucun événement à venir pour le moment.</p>
             </div>
             <div id="upcoming-grid" class="upcoming-grid" aria-live="polite"></div>
         </section>
 
         <section id="agenda" class="section-card">
-            <h2>Agenda</h2>
-            <p class="section-intro">Calendrier des prochaines formations, événements et réunions.</p>
-            <p id="data-mode-hint" class="data-hint" hidden></p>
-            <div id="calendar" class="calendar-mount" role="region" aria-label="Calendrier de l'agenda"></div>
+            <h2 data-i18n-key="agendaHeading">Agenda</h2>
+            <p class="section-intro" data-i18n-key="agendaIntro">Calendrier des prochaines formations, événements et réunions.</p>
+            <p id="data-mode-hint" class="data-hint" hidden data-i18n-key="dataModeHint"></p>
+            <div id="calendar" class="calendar-mount" role="region" aria-label="Calendrier de l'agenda" data-i18n-label-key="calendarRegionLabel"></div>
             <p id="calendar-error" class="calendar-error" hidden></p>
         </section>
 
         <section id="galerie" class="section-card">
-            <h2>Galerie</h2>
-            <p class="section-intro">Photos des actions JCI Oudref, organisées par événement.</p>
+            <h2 data-i18n-key="galleryHeading">Galerie</h2>
+            <p class="section-intro" data-i18n-key="galleryIntro">Photos des actions JCI Oudhref, organisées par événement.</p>
             <div id="gallery-empty" class="empty-state" hidden>
-                <p>Aucune photo pour le moment. Les images publiées depuis l’administration apparaîtront ici.</p>
+                <p data-i18n-key="galleryEmpty">Aucune photo pour le moment. Les images publiées depuis l’administration apparaîtront ici.</p>
             </div>
             <div id="gallery-grid"></div>
         </section>
 
         <section id="partenaires" class="section-card">
-            <h2>Partenaires & Sponsors</h2>
+            <h2 data-i18n-key="partnersHeading">Partenaires & Sponsors</h2>
 
             <div id="partners-empty" class="empty-state" hidden>
-                <p>Aucun partenaire pour le moment.</p>
+                <p data-i18n-key="partnersEmpty">Aucun partenaire pour le moment.</p>
             </div>
 
             <div class="partners-block">
-                <h3 class="subheading">Sponsors</h3>
-                <div id="sponsors-grid" class="partners-grid" aria-label="Sponsors"></div>
-            </div>
-
+                <h3 class="subheading" data-i18n-key="sponsorsHeading">Sponsors</h3>
+                <div id="sponsors-grid" class="partners-grid" aria-label="" data-i18n-label-key="sponsorsGridLabel"></div>
             <div class="partners-block">
-                <h3 class="subheading">Partenaires</h3>
-                <div id="partners-grid" class="partners-grid" aria-label="Partenaires"></div>
+                <h3 class="subheading" data-i18n-key="partnersHeadingSub">Partenaires</h3>
+                <div id="partners-grid" class="partners-grid" aria-label="" data-i18n-label-key="partnersGridLabel"></div>
             </div>
         </section>
     </main>
 
     <footer class="site-footer">
-        <div class="site-footer-social">
+        <div class="site-footer-social" aria-label="" data-i18n-label-key="footerSocialLabel">
             <a class="social-link" href="https://www.facebook.com/JciOudhref?mibextid=wwXIfr&rdid=Ry7D6muXJrKfAzls&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F184Y13piaf%2F%3Fmibextid%3DwwXIfr#" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
             </a>
@@ -166,26 +254,26 @@
             </a>
         </div>
 
-        <div class="site-footer-contact" aria-label="Contact">
-            <h3 class="site-footer-heading">Contact us</h3>
-            <p class="site-footer-contact-line"><strong>Location:</strong> Oudhref</p>
+        <div class="site-footer-contact" aria-label="" data-i18n-label-key="footerContactSectionLabel">
+            <h3 class="site-footer-heading" data-i18n-key="footerContactHeading">Contact us</h3>
+            <p class="site-footer-contact-line"><strong data-i18n-key="footerLocationLabel">Location:</strong> Oudhref</p>
             <p class="site-footer-contact-line">
-                <strong>Email:</strong>
+                <strong data-i18n-key="footerEmailLabel">Email:</strong>
                 <a class="site-footer-link" href="mailto:jcioudhref.tunisia@gmail.com">jcioudhref.tunisia@gmail.com</a>
             </p>
             <p class="site-footer-contact-line">
-                <strong>Formulaire de recrutement:</strong>
-                <a class="site-footer-link" href="https://l.instagram.com/?u=https%3A%2F%2Fdocs.google.com%2Fforms%2Fd%2Fe%2F1FAIpQLSebhWRILgQ6g2v_FKF7a7rJiNeIO2HRHwYw4f-X2Xxb2MHvxg%2Fviewform%3Futm_source%3Dig%26utm_medium%3Dsocial%26utm_content%3Dlink_in_bio%26fbclid%3DPAZnRzaAQ7LiVleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAacfrbDnAkEpgrRcH7J5NOaP_Br0g0QblAD8ktMQU2Iztb5TQ8dAVqhPZ9ujjA_aem_gpkxvMPxuVu_MbDGJns_rQ&e=AT7brU2uL7Hc2FYP7TJV4btAtErIhvB9rVnMub4J5boj4ZQ2bPV7Zmk5rucNzT9XroQ9QFpP1X_CLFmLziYKz7WY52SWkR1EZLPr1L52TQNsnVqZac4dBtLGPfje" target="_blank" rel="noopener noreferrer">Ouvrir le formulaire</a>
+                <strong data-i18n-key="footerFormLabel">Formulaire de recrutement:</strong>
+                <a class="site-footer-link" href="https://l.instagram.com/?u=https%3A%2F%2Fdocs.google.com%2Fforms%2Fd%2Fe%2F1FAIpQLSebhWRILgQ6g2v_FKF7a7rJiNeIO2HRHwYw4f-X2Xxb2MHvxg%2Fviewform%3Futm_source%3Dig%26utm_medium%3Dsocial%26utm_content%3Dlink_in_bio%26fbclid%3DPAZnRzaAQ7LiVleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAacfrbDnAkEpgrRcH7J5NOaP_Br0g0QblAD8ktMQU2Iztb5TQ8dAVqhPZ9ujjA_aem_gpkxvMPxuVu_MbDGJns_rQ&e=AT7brU2uL7Hc2FYP7TJV4btAtErIhvB9rVnMub4J5boj4ZQ2bPV7Zmk5rucNzT9XroQ9QFpP1X_CLFmLziYKz7WY52SWkR1EZLPr1L52TQNsnVqZac4dBtLGPfje" target="_blank" rel="noopener noreferrer" data-i18n-key="footerFormLink">Ouvrir le formulaire</a>
             </p>
         </div>
 
         <p class="site-footer-web">
             <a class="site-web-link" id="site-web-url" href="https://www.votre-site-jci.com" target="_blank" rel="noopener noreferrer">
                 <svg class="site-web-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 1.87-.7 3.59-1.87 4.91z"/></svg>
-                <span class="site-web-text">Site web JCI Oudref</span>
+                <span class="site-web-text" data-i18n-key="siteWebText">Site web JCI Oudhref</span>
             </a>
         </p>
-        <p>&copy; 2026 JCI Oudref — Tous droits réservés.</p>
+        <p data-i18n-key="footerCopyright">&copy; 2026 JCI Oudhref — Tous droits réservés.</p>
     </footer>
 
     <script src="js/jci-data.js"></script>
@@ -200,7 +288,7 @@
                 navToggle.addEventListener('click', function () {
                     var open = siteNav.classList.toggle('is-open');
                     navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-                    navToggle.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+                    navToggle.setAttribute('aria-label', open ? t('menuClose') : t('menuOpen'));
                 });
                 siteNav.querySelectorAll('a').forEach(function (a) {
                     a.addEventListener('click', function () {
@@ -210,6 +298,207 @@
                 });
             }
         })();
+
+        var langToggle = document.getElementById('lang-toggle');
+        var currentLang = localStorage.getItem('siteLang') === 'en' ? 'en' : 'fr';
+
+        var translations = {
+            fr: {
+                pageTitle: 'JCI Oudhref',
+                brandText: 'JCI Oudhref',
+                navMission: 'Mission',
+                navCredo: 'Credo',
+                navExecutiveBoard: 'Bureau exécutif',
+                navDirectorsBoard: 'Bureau directeur',
+                navUpcomingEvents: 'Prochains événements',
+                navAgenda: 'Agenda',
+                navGallery: 'Galerie',
+                heroEyebrow: 'Jeune Chambre Internationale',
+                heroTitle: 'JCI Oudhref',
+                heroLead: 'Organisation de jeunes citoyens actifs qui créent un impact positif dans la communauté d’Oudhref — leadership, service et développement durable.',
+                missionHeading: 'Notre mission',
+                missionText: 'Offrir aux jeunes leaders des opportunités de développement du leadership en leur donnant la capacité de créer des changements positifs.',
+                visionHeading: 'Notre vision',
+                visionText: 'Etre le principal réseau mondial de jeunes leaders.',
+                executiveBoardHeading: 'Bureau exécutif',
+                directorsBoardHeading: 'Bureau directeur',
+                statsHeading: 'Nos chiffres',
+                statsIntro: 'Actions, formations et partenariats.',
+                statActionsLabel: 'Actions',
+                statFormationsLabel: 'Formations',
+                statPartnershipsLabel: 'Partenariats',
+                upcomingHeading: 'Prochains événements',
+                upcomingIntro: 'Les prochaines formations, événements et réunions.',
+                upcomingEmpty: 'Aucun événement à venir pour le moment.',
+                agendaHeading: 'Agenda',
+                agendaIntro: 'Calendrier des prochaines formations, événements et réunions.',
+                dataModeHint: 'Données chargées depuis le serveur (base SQLite).',
+                calendarError: 'Le calendrier n’a pas pu se charger (script FullCalendar manquant ou bloqué). Vérifiez la connexion ou désactivez les bloqueurs de scripts.',
+                galleryHeading: 'Galerie',
+                galleryIntro: 'Photos des actions JCI Oudhref, organisées par événement.',
+                galleryEmpty: 'Aucune photo pour le moment. Les images publiées depuis l’administration apparaîtront ici.',
+                partnersHeading: 'Partenaires & Sponsors',
+                partnersEmpty: 'Aucun partenaire pour le moment.',
+                sponsorsHeading: 'Sponsors',
+                partnersHeadingSub: 'Partenaires',
+                footerContactHeading: 'Contactez-nous',
+                footerLocationLabel: 'Lieu :',
+                footerEmailLabel: 'Email :',
+                footerFormLabel: 'Formulaire de recrutement :',
+                footerFormLink: 'Ouvrir le formulaire',
+                footerSocialLabel: 'Réseaux sociaux',
+                mainNavigationLabel: 'Navigation principale',
+                sponsorsGridLabel: 'Sponsors',
+                partnersGridLabel: 'Partenaires',
+                footerContactSectionLabel: 'Contact',
+                footerCopyright: '© 2026 JCI Oudhref — Tous droits réservés.',
+                calendarRegionLabel: 'Calendrier de l\'agenda',
+                credoHeading: 'Notre credo',
+                credoText: 'Nous croyons,<br>Que la foi en Dieu donne à la vie son véritable sens<br>Que la fraternité humaine transcende la souveraineté des nations<br>Que la liberté des individus et de l’entreprise assure mieux la justice économique<br>Que l’autorité doit s’appuyer sur la loi et non sur l’arbitraire<br>Que la personne humaine est la plus précieuse des richesses<br>Et que servir l’humanité constitue l’oeuvre la plus noble d’une vie',
+                siteWebText: 'Site web JCI Oudhref',
+                menuOpen: 'Ouvrir le menu',
+                menuClose: 'Fermer le menu',
+                langToggleAria: 'Passer en anglais',
+                interestLabel: 'Intéressé',
+                interestAria: 'Je suis intéressé',
+                interestAriaOn: 'Déjà intéressé',
+                eventPlaceholder: 'Événement',
+                placeLabel: 'Lieu : ',
+                otherActions: 'Autres actions',
+                photosCountOne: '1 photo',
+                photosCountMany: '{n} photos',
+                photoAlt: 'Photo',
+                logoAlt: 'Logo',
+                eventTypeTraining: 'Formation',
+                eventTypeEvent: 'Événement',
+                eventTypeMeeting: 'Réunion'
+            },
+            en: {
+                pageTitle: 'JCI Oudhref',
+                brandText: 'JCI Oudhref',
+                navMission: 'Mission',
+                navCredo: 'Credo',
+                navExecutiveBoard: 'Executive Board',
+                navDirectorsBoard: 'Directors Board',
+                navUpcomingEvents: 'Upcoming events',
+                navAgenda: 'Agenda',
+                navGallery: 'Gallery',
+                heroEyebrow: 'Junior Chamber International',
+                heroTitle: 'JCI Oudhref',
+                heroLead: 'An active youth citizens organization creating positive impact in the Oudhref community — leadership, service and sustainable development.',
+                missionHeading: 'Our mission',
+                missionText: 'Offer young leaders leadership development opportunities by empowering them to create positive change.',
+                visionHeading: 'Our vision',
+                visionText: 'To be the world’s leading network of young leaders.',
+                executiveBoardHeading: 'Executive Board',
+                directorsBoardHeading: 'Directors Board',
+                statsHeading: 'Our stats',
+                statsIntro: 'Actions, trainings and partnerships.',
+                statActionsLabel: 'Actions',
+                statFormationsLabel: 'Trainings',
+                statPartnershipsLabel: 'Partnerships',
+                upcomingHeading: 'Upcoming events',
+                upcomingIntro: 'Upcoming trainings, events and meetings.',
+                upcomingEmpty: 'No upcoming events at the moment.',
+                agendaHeading: 'Agenda',
+                agendaIntro: 'Calendar of upcoming trainings, events and meetings.',
+                dataModeHint: 'Data loaded from server (SQLite database).',
+                calendarError: 'The calendar could not load (FullCalendar script missing or blocked). Check your connection or disable script blockers.',
+                galleryHeading: 'Gallery',
+                galleryIntro: 'Photos of JCI Oudhref actions, organized by event.',
+                galleryEmpty: 'No photos at the moment. Images published from the admin will appear here.',
+                partnersHeading: 'Partners & Sponsors',
+                partnersEmpty: 'No partners at the moment.',
+                sponsorsHeading: 'Sponsors',
+                partnersHeadingSub: 'Partners',
+                footerContactHeading: 'Contact us',
+                footerLocationLabel: 'Location:',
+                footerEmailLabel: 'Email:',
+                footerFormLabel: 'Recruitment form:',
+                footerFormLink: 'Open the form',
+                footerSocialLabel: 'Social links',
+                mainNavigationLabel: 'Main navigation',
+                sponsorsGridLabel: 'Sponsors',
+                partnersGridLabel: 'Partners',
+                footerContactSectionLabel: 'Contact',
+                footerCopyright: '© 2026 JCI Oudhref — All rights reserved.',
+                calendarRegionLabel: 'Agenda calendar',
+                credoHeading: 'Our credo',
+                credoText: 'We believe,<br>That faith in God gives life its true meaning<br>That human fraternity transcends the sovereignty of nations<br>That individual and enterprise freedom better ensures economic justice<br>That authority must be based on law and not arbitrariness<br>That the human person is the most precious wealth<br>And that serving humanity is the noblest work of a lifetime',
+                siteWebText: 'JCI Oudhref website',
+                menuOpen: 'Open menu',
+                menuClose: 'Close menu',
+                langToggleAria: 'Switch to French',
+                interestLabel: 'Interested',
+                interestAria: 'I am interested',
+                interestAriaOn: 'Already interested',
+                eventPlaceholder: 'Event',
+                placeLabel: 'Place: ',
+                otherActions: 'Other actions',
+                photosCountOne: '1 photo',
+                photosCountMany: '{n} photos',
+                photoAlt: 'Photo',
+                logoAlt: 'Logo',
+                eventTypeTraining: 'Training',
+                eventTypeEvent: 'Event',
+                eventTypeMeeting: 'Meeting'
+            }
+        };
+
+        function t(key, vars) {
+            var value = translations[currentLang][key] || translations.fr[key] || key;
+            if (typeof value !== 'string') return value;
+            return value.replace(/\{n\}/g, String(vars && vars.n != null ? vars.n : ''));
+        }
+
+        function translateEventType(type) {
+            if (!type) return t('eventPlaceholder');
+            var normalized = (type || '').toLowerCase();
+            if (normalized.indexOf('formation') !== -1 || normalized.indexOf('training') !== -1) return t('eventTypeTraining');
+            if (normalized.indexOf('événement') !== -1 || normalized.indexOf('evenement') !== -1 || normalized.indexOf('event') !== -1) return t('eventTypeEvent');
+            if (normalized.indexOf('réunion') !== -1 || normalized.indexOf('reunion') !== -1 || normalized.indexOf('meeting') !== -1) return t('eventTypeMeeting');
+            return type;
+        }
+
+        function applyTranslations() {
+            document.documentElement.lang = currentLang;
+            document.title = t('pageTitle');
+            document.querySelectorAll('[data-i18n-key]').forEach(function (el) {
+                el.textContent = t(el.dataset.i18nKey);
+            });
+            document.querySelectorAll('[data-i18n-html-key]').forEach(function (el) {
+                el.innerHTML = t(el.dataset.i18nHtmlKey);
+            });
+            document.querySelectorAll('[data-i18n-label-key]').forEach(function (el) {
+                el.setAttribute('aria-label', t(el.dataset.i18nLabelKey));
+            });
+            if (langToggle) {
+                langToggle.textContent = currentLang === 'fr' ? '🌐 EN' : '🌐 FR';
+                langToggle.setAttribute('aria-label', t('langToggleAria'));
+            }
+            var navToggle = document.getElementById('nav-toggle');
+            if (navToggle) {
+                var expanded = navToggle.getAttribute('aria-expanded') === 'true';
+                navToggle.setAttribute('aria-label', expanded ? t('menuClose') : t('menuOpen'));
+            }
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang === 'en' ? 'en' : 'fr';
+            localStorage.setItem('siteLang', currentLang);
+            applyTranslations();
+            location.reload();
+        }
+
+        function toggleLanguage() {
+            setLanguage(currentLang === 'fr' ? 'en' : 'fr');
+        }
+
+        if (langToggle) {
+            langToggle.addEventListener('click', toggleLanguage);
+        }
+
+        applyTranslations();
 
         document.addEventListener('DOMContentLoaded', async function () {
             var hint = document.getElementById('data-mode-hint');
@@ -225,7 +514,7 @@
                     // On garde uniquement le message "mode serveur" et on masque le mode hors ligne.
                     if (server) {
                         hint.hidden = false;
-                        hint.textContent = 'Données chargées depuis le serveur (base SQLite).';
+                        hint.textContent = t('dataModeHint');
                     } else {
                         hint.hidden = true;
                     }
@@ -251,8 +540,7 @@
             if (typeof FullCalendar === 'undefined') {
                 if (calendarErr) {
                     calendarErr.hidden = false;
-                    calendarErr.textContent =
-                        'Le calendrier n’a pas pu se charger (script FullCalendar manquant ou bloqué). Vérifiez la connexion ou désactivez les bloqueurs de scripts.';
+                    calendarErr.textContent = t('calendarError');
                 }
                 return;
             }
@@ -349,7 +637,7 @@
                     var img = document.createElement('img');
                     img.className = 'partner-logo';
                     img.src = p.src;
-                    img.alt = p.name || 'Logo';
+                    img.alt = p.name || t('logoAlt');
                     img.loading = 'lazy';
 
                     var name = document.createElement('div');
@@ -469,7 +757,7 @@
 
                 var title = document.createElement('h3');
                 title.className = 'upcoming-title';
-                title.textContent = (ev.type ? ev.type + ' : ' : '') + (ev.title || 'Événement');
+                title.textContent = (ev.type ? translateEventType(ev.type) + ' : ' : '') + (ev.title || t('eventPlaceholder'));
 
                 var meta = document.createElement('p');
                 meta.className = 'upcoming-meta';
@@ -489,7 +777,7 @@
                 var btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'interest-btn';
-                btn.setAttribute('aria-label', 'Je suis intéressé');
+btn.setAttribute('aria-label', t('interestAria'));
 
                 var heart = document.createElement('span');
                 heart.className = 'interest-heart';
@@ -498,8 +786,7 @@
 
                 var label = document.createElement('span');
                 label.className = 'interest-label';
-                label.textContent = 'Intéressé';
-
+                    label.textContent = t('interestLabel');
                 var badge = document.createElement('span');
                 badge.className = 'interest-count';
                 badge.textContent = String(count);
@@ -512,7 +799,7 @@
                     btn.disabled = !!isOn;
                     btn.classList.toggle('is-on', !!isOn);
                     badge.textContent = isOn ? '1' : '0';
-                    btn.setAttribute('aria-label', isOn ? 'Déjà intéressé' : 'Je suis intéressé');
+                    btn.setAttribute('aria-label', isOn ? t('interestAriaOn') : t('interestAria'));
                 }
 
                 syncInterestedUi(interested);
@@ -562,7 +849,7 @@
 
             Object.keys(byEvent).forEach(function (key) {
                 var group = byEvent[key];
-                var title = group[0].eventTitle || 'Autres actions';
+                var title = group[0].eventTitle || t('otherActions');
 
                 var details = document.createElement('details');
                 details.className = 'gallery-group gallery-folder';
@@ -583,7 +870,7 @@
                 var countSpan = document.createElement('span');
                 countSpan.className = 'gallery-folder-count';
                 var n = group.length;
-                countSpan.textContent = n === 1 ? '1 photo' : n + ' photos';
+                countSpan.textContent = n === 1 ? t('photosCountOne') : t('photosCountMany', { n: n });
 
                 summary.appendChild(icon);
                 summary.appendChild(nameSpan);
@@ -597,7 +884,7 @@
                     card.className = 'gallery-card';
                     var im = document.createElement('img');
                     im.src = img.src;
-                    im.alt = img.name || 'Photo';
+                    im.alt = img.name || t('photoAlt');
                     im.loading = 'lazy';
                     card.appendChild(im);
                     innerGrid.appendChild(card);

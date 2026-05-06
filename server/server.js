@@ -32,7 +32,7 @@ function requireAdmin(req, res, next) {
 }
 
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true, service: 'jci-oudref' });
+  res.json({ ok: true, service: 'jci-oudhref' });
 });
 
 app.get('/api/site-stats', (req, res) => {
@@ -234,6 +234,6 @@ app.get(/^(?!\/api).*/, (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`JCI Oudref server running on port ${PORT}`);
+  console.log(`JCI Oudhref server running on port ${PORT}`);
   console.log(`API health check: https://jci-website-production.up.railway.app/:${PORT}/api/health`);
 });
