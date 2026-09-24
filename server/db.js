@@ -2,11 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
 
-const dataDir = path.join(__dirname, 'data');
+const dataDir = process.env.DB_DIR || path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 const dbPath = path.join(dataDir, 'jci.db');
 const db = new Database(dbPath);
+
+console.log(`SQLite database: ${dbPath}`);
 
 db.pragma('journal_mode = WAL');
 

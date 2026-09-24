@@ -470,9 +470,9 @@
         async function updateModeUi() {
             const server = await JciData.usesServer();
             if (modeBanner) {
-                modeBanner.textContent = server ? t('modeServer') : t('modeBrowser');
+                modeBanner.textContent = server ? t('modeServer') : t('loginServerError');
             }
-            setLocalActionsVisible(!server);
+            setLocalActionsVisible(false);
         }
 
         function switchTab(name) {

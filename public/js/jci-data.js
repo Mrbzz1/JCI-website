@@ -1,5 +1,5 @@
 /**
- * Couche données : API SQLite (serveur) avec repli localStorage si pas de serveur.
+ * Couche données : API SQLite du serveur de production.
  */
 (function (global) {
   const LS = {
@@ -24,6 +24,12 @@
       apiOk = false;
     }
     return apiOk;
+  }
+
+  async function requireApi() {
+    if (!(await checkApi())) {
+      throw new Error('Serveur indisponible. La modification n’a pas été enregistrée.');
+    }
   }
 
   function getAdminToken() {
@@ -55,18 +61,10 @@
 
   /** Événements agenda (public / admin lecture) */
   async function getAgendaEvents() {
-    if (await checkApi()) {
-      const r = await fetch('/api/events');
-      if (!r.ok) throw new Error('Impossible de charger l\'agenda.');
-      return await r.json();
-    }
-    const raw = localStorage.getItem(LS.agendaPublished);
-    if (!raw) return [];
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return [];
-    }
+    await requireApi();
+    const r = await fetch('/api/events', { cache: 'no-store' });
+    if (!r.ok) throw new Error('Impossible de charger l\'agenda.');
+    return await r.json();
   }
 
   /** Brouillon admin agenda (localStorage uniquement) */
@@ -100,77 +98,49 @@
 
   /** Admin : ajouter un événement */
   async function adminAddEvent(ev) {
-    if (await checkApi()) {
-      const r = await fetch('/api/events', {
-        method: 'POST',
-        headers: adminHeaders(true),
-        body: JSON.stringify(ev)
-      });
-      if (r.status === 401) throw new Error('auth');
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err.error || 'Erreur serveur');
-      }
-      return await r.json();
+    await requireApi();
+    const r = await fetch('/api/events', {
+      method: 'POST',
+      headers: adminHeaders(true),
+      body: JSON.stringify(ev)
+    });
+    if (r.status === 401) throw new Error('auth');
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || 'Erreur serveur');
     }
-    const events = loadDraftEvents();
-    events.push(ev);
-    saveDraftEvents(events);
-    return ev;
+    return await r.json();
   }
 
   /** Admin : supprimer un événement (id serveur ou index local) */
   async function adminDeleteEvent(idOrIndex) {
-    if (await checkApi()) {
-      const r = await fetch('/api/events/' + encodeURIComponent(idOrIndex), {
-        method: 'DELETE',
-        headers: adminHeaders(false)
-      });
-      if (r.status === 401) throw new Error('auth');
-      if (!r.ok) throw new Error('Suppression impossible');
-      return;
-    }
-    const events = loadDraftEvents();
-    events.splice(Number(idOrIndex), 1);
-    saveDraftEvents(events);
+    await requireApi();
+    const r = await fetch('/api/events/' + encodeURIComponent(idOrIndex), {
+      method: 'DELETE',
+      headers: adminHeaders(false)
+    });
+    if (r.status === 401) throw new Error('auth');
+    if (!r.ok) throw new Error('Suppression impossible');
   }
 
   /** Liste pour l’admin (serveur ou brouillon local) */
   async function adminListEvents() {
-    if (await checkApi()) {
-      return await getAgendaEvents();
-    }
-    return loadDraftEvents();
+    return await getAgendaEvents();
   }
 
   /** Galerie : normalisée pour l’affichage { eventKey, eventTitle, src, dbId? } */
   async function getGalleryItems() {
-    if (await checkApi()) {
-      const r = await fetch('/api/gallery');
-      if (!r.ok) return [];
-      const rows = await r.json();
-      return rows.map((row) => ({
-        dbId: row.id,
-        eventKey: row.event_key,
-        eventTitle: row.event_title,
-        name: row.original_name,
-        src: '/api/gallery/' + row.id + '/image'
-      }));
-    }
-    const raw = localStorage.getItem(LS.galleryPublished);
-    if (!raw) return [];
-    try {
-      const arr = JSON.parse(raw);
-      return arr.map((img) => ({
-        eventKey: img.eventKey || 'autre',
-        eventTitle: img.eventTitle || 'Autres actions',
-        name: img.name,
-        src: img.dataUrl,
-        dataUrl: img.dataUrl
-      }));
-    } catch {
-      return [];
-    }
+    await requireApi();
+    const r = await fetch('/api/gallery', { cache: 'no-store' });
+    if (!r.ok) throw new Error('Impossible de charger la galerie.');
+    const rows = await r.json();
+    return rows.map((row) => ({
+      dbId: row.id,
+      eventKey: row.event_key,
+      eventTitle: row.event_title,
+      name: row.original_name,
+      src: '/api/gallery/' + row.id + '/image'
+    }));
   }
 
   function loadDraftGallery() {
@@ -202,88 +172,46 @@
   }
 
   async function adminGalleryListForUi() {
-    if (await checkApi()) {
-      return await getGalleryItems();
-    }
-    return loadDraftGallery().map((img, index) => ({
-      localIndex: index,
-      eventKey: img.eventKey || 'autre',
-      eventTitle: img.eventTitle || 'Autre',
-      name: img.name,
-      src: img.dataUrl,
-      dataUrl: img.dataUrl
-    }));
+    return await getGalleryItems();
   }
 
   async function adminAddGalleryImages({ eventKey, eventTitle, files }) {
-    if (await checkApi()) {
-      const fd = new FormData();
-      fd.append('event_key', eventKey);
-      fd.append('event_title', eventTitle);
-      for (const f of files) {
-        fd.append('images', f);
-      }
-      const r = await fetch('/api/gallery', {
-        method: 'POST',
-        headers: { 'X-Admin-Token': getAdminToken() },
-        body: fd
-      });
-      if (r.status === 401) throw new Error('auth');
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err.error || 'Envoi impossible');
-      }
-      return await r.json();
+    await requireApi();
+    const fd = new FormData();
+    fd.append('event_key', eventKey);
+    fd.append('event_title', eventTitle);
+    for (const f of files) {
+      fd.append('images', f);
     }
-    const images = loadDraftGallery();
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) continue;
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(new Error('Lecture fichier'));
-        reader.readAsDataURL(file);
-      });
-      images.push({
-        name: file.name,
-        dataUrl,
-        eventKey,
-        eventTitle
-      });
+    const r = await fetch('/api/gallery', {
+      method: 'POST',
+      headers: { 'X-Admin-Token': getAdminToken() },
+      body: fd
+    });
+    if (r.status === 401) throw new Error('auth');
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || 'Envoi impossible');
     }
-    saveDraftGallery(images);
-    return { ok: true };
+    return await r.json();
   }
 
   async function adminDeleteGalleryImage(idOrLocalIndex) {
-    if (await checkApi()) {
-      const r = await fetch('/api/gallery/' + encodeURIComponent(idOrLocalIndex), {
-        method: 'DELETE',
-        headers: adminHeaders(false)
-      });
-      if (r.status === 401) throw new Error('auth');
-      if (!r.ok) throw new Error('Suppression impossible');
-      return;
-    }
-    const images = loadDraftGallery();
-    images.splice(Number(idOrLocalIndex), 1);
-    saveDraftGallery(images);
+    await requireApi();
+    const r = await fetch('/api/gallery/' + encodeURIComponent(idOrLocalIndex), {
+      method: 'DELETE',
+      headers: adminHeaders(false)
+    });
+    if (r.status === 401) throw new Error('auth');
+    if (!r.ok) throw new Error('Suppression impossible');
   }
 
   /** Chiffres du site */
   async function getSiteStats() {
-    if (await checkApi()) {
-      const r = await fetch('/api/site-stats', { cache: 'no-store' });
-      if (!r.ok) throw new Error('stats');
-      return await r.json();
-    }
-    const raw = localStorage.getItem(LS.siteStatsPublished);
-    if (!raw) return { actions: 0, formations: 0, partenariats: 0 };
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return { actions: 0, formations: 0, partenariats: 0 };
-    }
+    await requireApi();
+    const r = await fetch('/api/site-stats', { cache: 'no-store' });
+    if (!r.ok) throw new Error('Impossible de charger les statistiques.');
+    return await r.json();
   }
 
   function loadDraftSiteStats() {
@@ -315,53 +243,34 @@
   }
 
   async function adminUpdateSiteStats(stats) {
-    if (await checkApi()) {
-      const r = await fetch('/api/site-stats', {
-        method: 'PUT',
-        headers: adminHeaders(true),
-        body: JSON.stringify(stats || {})
-      });
-      if (r.status === 401) throw new Error('auth');
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err.error || 'Erreur serveur');
-      }
-      return await r.json();
+    await requireApi();
+    const r = await fetch('/api/site-stats', {
+      method: 'PUT',
+      headers: adminHeaders(true),
+      body: JSON.stringify(stats || {})
+    });
+    if (r.status === 401) throw new Error('auth');
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || 'Erreur serveur');
     }
-    saveDraftSiteStats(stats || {});
-    return stats;
+    return await r.json();
   }
 
   /** Partenaires / Sponsors */
   async function getPartners() {
-    if (await checkApi()) {
-      const r = await fetch('/api/partners', { cache: 'no-store' });
-      if (!r.ok) return [];
-      const rows = await r.json();
-      return rows.map((row) => ({
-        dbId: row.id,
-        kind: row.kind,
-        name: row.name,
-        url: row.url || '',
-        sortOrder: row.sort_order || 0,
-        src: '/api/partners/' + row.id + '/logo'
-      }));
-    }
-    const raw = localStorage.getItem(LS.partnersPublished);
-    if (!raw) return [];
-    try {
-      const arr = JSON.parse(raw);
-      return (arr || []).map((p) => ({
-        kind: p.kind,
-        name: p.name,
-        url: p.url || '',
-        sortOrder: p.sortOrder || 0,
-        dataUrl: p.dataUrl,
-        src: p.dataUrl
-      }));
-    } catch {
-      return [];
-    }
+    await requireApi();
+    const r = await fetch('/api/partners', { cache: 'no-store' });
+    if (!r.ok) throw new Error('Impossible de charger les partenaires.');
+    const rows = await r.json();
+    return rows.map((row) => ({
+      dbId: row.id,
+      kind: row.kind,
+      name: row.name,
+      url: row.url || '',
+      sortOrder: row.sort_order || 0,
+      src: '/api/partners/' + row.id + '/logo'
+    }));
   }
 
   function loadDraftPartners() {
@@ -393,72 +302,38 @@
   }
 
   async function adminPartnersListForUi() {
-    if (await checkApi()) {
-      return await getPartners();
-    }
-    return loadDraftPartners().map((p, index) => ({
-      localIndex: index,
-      kind: p.kind,
-      name: p.name,
-      url: p.url || '',
-      sortOrder: p.sortOrder || 0,
-      dataUrl: p.dataUrl,
-      src: p.dataUrl
-    }));
+    return await getPartners();
   }
 
   async function adminAddPartner({ kind, name, url, sortOrder, file }) {
-    if (await checkApi()) {
-      const fd = new FormData();
-      fd.append('kind', String(kind || '').trim());
-      fd.append('name', String(name || '').trim());
-      fd.append('url', String(url || '').trim());
-      fd.append('sort_order', String(sortOrder || 0));
-      fd.append('logo', file);
-      const r = await fetch('/api/partners', {
-        method: 'POST',
-        headers: { 'X-Admin-Token': getAdminToken() },
-        body: fd
-      });
-      if (r.status === 401) throw new Error('auth');
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err.error || 'Envoi impossible');
-      }
-      return await r.json();
+    await requireApi();
+    const fd = new FormData();
+    fd.append('kind', String(kind || '').trim());
+    fd.append('name', String(name || '').trim());
+    fd.append('url', String(url || '').trim());
+    fd.append('sort_order', String(sortOrder || 0));
+    fd.append('logo', file);
+    const r = await fetch('/api/partners', {
+      method: 'POST',
+      headers: { 'X-Admin-Token': getAdminToken() },
+      body: fd
+    });
+    if (r.status === 401) throw new Error('auth');
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || 'Envoi impossible');
     }
-    if (!file || !file.type.startsWith('image/')) return;
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error('Lecture fichier'));
-      reader.readAsDataURL(file);
-    });
-    const items = loadDraftPartners();
-    items.push({
-      kind: String(kind || 'partner'),
-      name: String(name || '').trim(),
-      url: String(url || '').trim(),
-      sortOrder: Number(sortOrder || 0) || 0,
-      dataUrl
-    });
-    saveDraftPartners(items);
-    return { ok: true };
+    return await r.json();
   }
 
   async function adminDeletePartner(idOrLocalIndex) {
-    if (await checkApi()) {
-      const r = await fetch('/api/partners/' + encodeURIComponent(idOrLocalIndex), {
-        method: 'DELETE',
-        headers: adminHeaders(false)
-      });
-      if (r.status === 401) throw new Error('auth');
-      if (!r.ok) throw new Error('Suppression impossible');
-      return;
-    }
-    const items = loadDraftPartners();
-    items.splice(Number(idOrLocalIndex), 1);
-    saveDraftPartners(items);
+    await requireApi();
+    const r = await fetch('/api/partners/' + encodeURIComponent(idOrLocalIndex), {
+      method: 'DELETE',
+      headers: adminHeaders(false)
+    });
+    if (r.status === 401) throw new Error('auth');
+    if (!r.ok) throw new Error('Suppression impossible');
   }
 
   async function usesServer() {
