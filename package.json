@@ -4,10 +4,12 @@
   "description": "Site JCI Oudhref — lance le serveur web (calendrier, galerie, API SQLite)",
   "scripts": {
     "start": "node server/server.js",
+    "vercel-build": "node scripts/generate-client-config.js",
     "install-server": "npm install --prefix server"
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",

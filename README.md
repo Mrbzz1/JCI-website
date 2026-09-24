@@ -26,16 +26,19 @@ Le site est ensuite disponible sur `http://localhost:3000` et l’administration
 
 ## Fonctionnement
 
-- Express sert les fichiers de `public/`.
+- Express sert les fichiers de `public/` quand le projet tourne entièrement sur Railway ; le déploiement Vercel sert le frontend statique.
 - SQLite est initialisée dans `server/data/jci.db`.
-- Les routes publiques commencent par `/api/` : agenda, galerie, statistiques et partenaires.
-- Les routes d’écriture exigent `X-Admin-Token` ou `Authorization: Bearer <token>`.
+- Les routes publiques commencent par `/api/` : agenda, galerie, statistiques et partenaires. En production Vercel, elles ciblent l’URL Railway via `JCI_API_BASE_URL`.
+- Les routes d’écriture exigent `Authorization: Bearer <token>`.
 - Les images sont stockées dans SQLite, avec une limite de 8 Mo par fichier.
 
 ## Variables d’environnement
 
 - `PORT` : port HTTP, `3000` par défaut.
 - `ADMIN_TOKEN` : token obligatoire pour l’administration. Il doit être défini dans Railway ou dans l’environnement local.
+- `JWT_SECRET` : secret de signature JWT, obligatoire en production et défini uniquement dans Railway.
+- `CORS_ORIGINS` : origines Vercel autorisées, séparées par des virgules.
+- `JCI_API_BASE_URL` : URL publique Railway injectée dans le frontend pendant le build Vercel.
 
 ## Déploiement Railway
 

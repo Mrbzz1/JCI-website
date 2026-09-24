@@ -208,6 +208,7 @@
             <h2 data-i18n-key="agendaHeading">Agenda</h2>
             <p class="section-intro" data-i18n-key="agendaIntro">Calendrier des prochaines formations, événements et réunions.</p>
             <p id="data-mode-hint" class="data-hint" hidden data-i18n-key="dataModeHint"></p>
+            <p id="data-error" class="calendar-error" hidden data-i18n-key="dataUnavailable"></p>
             <div id="calendar" class="calendar-mount" role="region" aria-label="Calendrier de l'agenda" data-i18n-label-key="calendarRegionLabel"></div>
             <p id="calendar-error" class="calendar-error" hidden></p>
         </section>
@@ -277,6 +278,7 @@
         <p data-i18n-key="footerCopyright">&copy; 2026 JCI Oudhref — Tous droits réservés.</p>
     </footer>
 
+    <script src="js/runtime-config.js"></script>
     <script src="js/jci-data.js"></script>
     <!-- v6 : le bundle global est index.global.min.js (main.min.js ne définit pas window.FullCalendar) -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
@@ -334,6 +336,7 @@
                 agendaHeading: 'Agenda',
                 agendaIntro: 'Calendrier des prochaines formations, événements et réunions.',
                 dataModeHint: 'Données chargées depuis le serveur (base SQLite).',
+                dataUnavailable: 'Le serveur de données est indisponible. Les données ne peuvent pas être actualisées.',
                 calendarError: 'Le calendrier n’a pas pu se charger (script FullCalendar manquant ou bloqué). Vérifiez la connexion ou désactivez les bloqueurs de scripts.',
                 galleryHeading: 'Galerie',
                 galleryIntro: 'Photos des actions JCI Oudhref, organisées par événement.',
@@ -404,6 +407,7 @@
                 agendaHeading: 'Agenda',
                 agendaIntro: 'Calendar of upcoming trainings, events and meetings.',
                 dataModeHint: 'Data loaded from server (SQLite database).',
+                dataUnavailable: 'The data server is unavailable. Data cannot be refreshed.',
                 calendarError: 'The calendar could not load (FullCalendar script missing or blocked). Check your connection or disable script blockers.',
                 galleryHeading: 'Gallery',
                 galleryIntro: 'Photos of JCI Oudhref actions, organized by event.',
@@ -503,6 +507,7 @@
 
         document.addEventListener('DOMContentLoaded', async function () {
             var hint = document.getElementById('data-mode-hint');
+            var dataError = document.getElementById('data-error');
             var upcomingGrid = document.getElementById('upcoming-grid');
             var upcomingEmpty = document.getElementById('upcoming-empty');
             var statsGrid = document.getElementById('stats-grid');
@@ -531,6 +536,7 @@
                 events = await JciData.getAgendaEvents();
             } catch (e) {
                 events = [];
+                if (dataError) dataError.hidden = false;
             }
 
             renderUpcoming(events, upcomingGrid, upcomingEmpty);
@@ -599,7 +605,8 @@
                     el.textContent = String(map[k] != null ? map[k] : '—');
                 });
             } catch (e) {
-                // Laisse les tirets si erreur
+                var error = document.getElementById('data-error');
+                if (error) error.hidden = false;
             }
         }
 
@@ -656,6 +663,8 @@
                 });
             } catch (e) {
                 if (emptyEl) emptyEl.hidden = true;
+                var error = document.getElementById('data-error');
+                if (error) error.hidden = false;
             }
         }
 
@@ -831,6 +840,8 @@ btn.setAttribute('aria-label', t('interestAria'));
                 images = await JciData.getGalleryItems();
             } catch (e) {
                 images = [];
+                var error = document.getElementById('data-error');
+                if (error) error.hidden = false;
             }
 
             grid.innerHTML = '';

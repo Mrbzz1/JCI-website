@@ -2,6 +2,14 @@
  * Couche données : API SQLite du serveur de production.
  */
 (function (global) {
+  const API_BASE = String((global.JCI_CONFIG && global.JCI_CONFIG.apiBaseUrl) || '')
+    .trim()
+    .replace(/\/$/, '');
+
+  function apiUrl(path) {
+    return API_BASE + path;
+  }
+
   const LS = {
     agendaPublished: 'jciAgendaEvents',
     agendaDraft: 'jciAgendaEventsDraft',
@@ -18,7 +26,7 @@
   async function checkApi() {
     if (apiOk !== null) return apiOk;
     try {
-      const r = await fetch('/api/health', { cache: 'no-store' });
+      const r = await fetch(apiUrl('/api/health'), { cache: 'no-store' });
       apiOk = r.ok;
     } catch {
       apiOk = false;
@@ -37,7 +45,7 @@
   }
 
   function adminHeaders(json) {
-    const h = { 'X-Admin-Token': getAdminToken() };
+    const h = { Authorization: 'Bearer ' + getAdminToken() };
     if (json) h['Content-Type'] = 'application/json';
     return h;
   }
@@ -45,7 +53,7 @@
   async function checkAdminToken(password) {
     if (!password || !(await checkApi())) return false;
     try {
-      const r = await fetch('/api/admin/login', {
+      const r = await fetch(apiUrl('/api/admin/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: String(password) }),
@@ -62,7 +70,7 @@
   /** Événements agenda (public / admin lecture) */
   async function getAgendaEvents() {
     await requireApi();
-    const r = await fetch('/api/events', { cache: 'no-store' });
+    const r = await fetch(apiUrl('/api/events'), { cache: 'no-store' });
     if (!r.ok) throw new Error('Impossible de charger l\'agenda.');
     return await r.json();
   }
@@ -99,7 +107,7 @@
   /** Admin : ajouter un événement */
   async function adminAddEvent(ev) {
     await requireApi();
-    const r = await fetch('/api/events', {
+    const r = await fetch(apiUrl('/api/events'), {
       method: 'POST',
       headers: adminHeaders(true),
       body: JSON.stringify(ev)
@@ -115,7 +123,7 @@
   /** Admin : supprimer un événement (id serveur ou index local) */
   async function adminDeleteEvent(idOrIndex) {
     await requireApi();
-    const r = await fetch('/api/events/' + encodeURIComponent(idOrIndex), {
+    const r = await fetch(apiUrl('/api/events/' + encodeURIComponent(idOrIndex)), {
       method: 'DELETE',
       headers: adminHeaders(false)
     });
@@ -131,7 +139,7 @@
   /** Galerie : normalisée pour l’affichage { eventKey, eventTitle, src, dbId? } */
   async function getGalleryItems() {
     await requireApi();
-    const r = await fetch('/api/gallery', { cache: 'no-store' });
+    const r = await fetch(apiUrl('/api/gallery'), { cache: 'no-store' });
     if (!r.ok) throw new Error('Impossible de charger la galerie.');
     const rows = await r.json();
     return rows.map((row) => ({
@@ -139,7 +147,7 @@
       eventKey: row.event_key,
       eventTitle: row.event_title,
       name: row.original_name,
-      src: '/api/gallery/' + row.id + '/image'
+      src: apiUrl('/api/gallery/' + row.id + '/image')
     }));
   }
 
@@ -183,9 +191,9 @@
     for (const f of files) {
       fd.append('images', f);
     }
-    const r = await fetch('/api/gallery', {
+    const r = await fetch(apiUrl('/api/gallery'), {
       method: 'POST',
-      headers: { 'X-Admin-Token': getAdminToken() },
+      headers: { Authorization: 'Bearer ' + getAdminToken() },
       body: fd
     });
     if (r.status === 401) throw new Error('auth');
@@ -198,7 +206,7 @@
 
   async function adminDeleteGalleryImage(idOrLocalIndex) {
     await requireApi();
-    const r = await fetch('/api/gallery/' + encodeURIComponent(idOrLocalIndex), {
+    const r = await fetch(apiUrl('/api/gallery/' + encodeURIComponent(idOrLocalIndex)), {
       method: 'DELETE',
       headers: adminHeaders(false)
     });
@@ -209,7 +217,7 @@
   /** Chiffres du site */
   async function getSiteStats() {
     await requireApi();
-    const r = await fetch('/api/site-stats', { cache: 'no-store' });
+    const r = await fetch(apiUrl('/api/site-stats'), { cache: 'no-store' });
     if (!r.ok) throw new Error('Impossible de charger les statistiques.');
     return await r.json();
   }
@@ -244,7 +252,7 @@
 
   async function adminUpdateSiteStats(stats) {
     await requireApi();
-    const r = await fetch('/api/site-stats', {
+    const r = await fetch(apiUrl('/api/site-stats'), {
       method: 'PUT',
       headers: adminHeaders(true),
       body: JSON.stringify(stats || {})
@@ -260,7 +268,7 @@
   /** Partenaires / Sponsors */
   async function getPartners() {
     await requireApi();
-    const r = await fetch('/api/partners', { cache: 'no-store' });
+    const r = await fetch(apiUrl('/api/partners'), { cache: 'no-store' });
     if (!r.ok) throw new Error('Impossible de charger les partenaires.');
     const rows = await r.json();
     return rows.map((row) => ({
@@ -269,7 +277,7 @@
       name: row.name,
       url: row.url || '',
       sortOrder: row.sort_order || 0,
-      src: '/api/partners/' + row.id + '/logo'
+      src: apiUrl('/api/partners/' + row.id + '/logo')
     }));
   }
 
@@ -313,9 +321,9 @@
     fd.append('url', String(url || '').trim());
     fd.append('sort_order', String(sortOrder || 0));
     fd.append('logo', file);
-    const r = await fetch('/api/partners', {
+    const r = await fetch(apiUrl('/api/partners'), {
       method: 'POST',
-      headers: { 'X-Admin-Token': getAdminToken() },
+      headers: { Authorization: 'Bearer ' + getAdminToken() },
       body: fd
     });
     if (r.status === 401) throw new Error('auth');
@@ -328,7 +336,7 @@
 
   async function adminDeletePartner(idOrLocalIndex) {
     await requireApi();
-    const r = await fetch('/api/partners/' + encodeURIComponent(idOrLocalIndex), {
+    const r = await fetch(apiUrl('/api/partners/' + encodeURIComponent(idOrLocalIndex)), {
       method: 'DELETE',
       headers: adminHeaders(false)
     });
@@ -342,6 +350,7 @@
 
   global.JciData = {
     checkApi,
+    apiBase: API_BASE,
     checkAdminToken,
     getAdminToken,
     setAdminToken: (t) => sessionStorage.setItem('jciAdminToken', t),
