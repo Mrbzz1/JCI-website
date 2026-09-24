@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const multer = require('multer');
+const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
 
@@ -13,6 +14,12 @@ if (!process.env.ADMIN_TOKEN) {
 }
 const JWT_SECRET = process.env.JWT_SECRET || ADMIN_TOKEN;
 const JWT_EXPIRES_IN = '8h';
+const allowedOrigins = new Set(
+  String(process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
 
 const rootDir = path.join(__dirname, '..');
 const upload = multer({
@@ -27,6 +34,15 @@ const upload = multer({
 });
 
 app.use(express.json({ limit: '1mb' }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    callback(new Error('Origine non autorisée par CORS.'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204
+}));
 
 function getToken(req) {
   const h = req.headers['x-admin-token'];
@@ -250,6 +266,9 @@ app.get('/api/admin/check', requireAdmin, (req, res) => {
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
+  if (err.message === 'Origine non autorisée par CORS.') {
+    return res.status(403).json({ error: err.message });
+  }
   if (err instanceof multer.MulterError || err.message === 'Seules les images sont acceptées.') {
     return res.status(400).json({ error: err.message || 'Fichier invalide.' });
   }
