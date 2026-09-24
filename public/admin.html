@@ -182,8 +182,6 @@
 
     <script src="js/jci-data.js"></script>
     <script>
-        const ADMIN_PASSWORD = 'olm_oudhref2026';
-
         const loginSection = document.getElementById('login-section');
         const loginBox = document.getElementById('login-box');
         const loginButton = document.getElementById('login-button');
@@ -747,13 +745,20 @@
         }
 
         loginButton.addEventListener('click', async () => {
-            const val = passwordInput.value;
-            if (val !== ADMIN_PASSWORD) {
+            const val = String(passwordInput.value || '').trim();
+            if (!val) {
+                loginError.textContent = t('loginError');
+                loginError.hidden = false;
+                return;
+            }
+            const jwtToken = await JciData.checkAdminToken(val);
+            if (!jwtToken) {
+                loginError.textContent = t('loginError');
                 loginError.hidden = false;
                 return;
             }
             loginError.hidden = true;
-            JciData.setAdminToken(val);
+            JciData.setAdminToken(jwtToken);
             loginSection.hidden = true;
             adminPanel.hidden = false;
             await updateModeUi();

@@ -36,6 +36,23 @@
     return h;
   }
 
+  async function checkAdminToken(password) {
+    if (!password || !(await checkApi())) return false;
+    try {
+      const r = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: String(password) }),
+        cache: 'no-store'
+      });
+      if (!r.ok) return false;
+      const data = await r.json();
+      return data.token || false;
+    } catch {
+      return false;
+    }
+  }
+
   /** Événements agenda (public / admin lecture) */
   async function getAgendaEvents() {
     if (await checkApi()) {
@@ -450,6 +467,7 @@
 
   global.JciData = {
     checkApi,
+    checkAdminToken,
     getAdminToken,
     setAdminToken: (t) => sessionStorage.setItem('jciAdminToken', t),
     clearAdminToken: () => sessionStorage.removeItem('jciAdminToken'),

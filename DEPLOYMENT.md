@@ -45,7 +45,7 @@ jci web/
 ### Environment Variables
 Make sure these are set in Railway:
 - `PORT` - Automatically set by Railway (defaults to 3000 locally)
-- `ADMIN_TOKEN` - Set to your desired admin token (defaults to 'jci2026')
+- `ADMIN_TOKEN` - Set to a strong, unique admin token. The server refuses to start if it is missing.
 
 ### Start Command
 The `package.json` is configured to run:
@@ -66,7 +66,6 @@ The server successfully starts and logs:
 JCI Oudhref server running on port 3000
 API health check: http://localhost:3000/api/health
 ```
-
 ## Next Steps (Optional Cleanup)
 You can remove the original files from the root directory after verifying everything works:
 - `Global.css` (original in root)

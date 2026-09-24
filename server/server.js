@@ -1,16 +1,29 @@
 const path = require('path');
 const express = require('express');
 const multer = require('multer');
+const jwt = require('jsonwebtoken');
 const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'jci2026';
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+if (!process.env.ADMIN_TOKEN) {
+  console.error('ERROR: ADMIN_TOKEN must be defined before starting the server.');
+  process.exit(1);
+}
+const JWT_SECRET = process.env.JWT_SECRET || ADMIN_TOKEN;
+const JWT_EXPIRES_IN = '8h';
 
 const rootDir = path.join(__dirname, '..');
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 }
+  limits: { fileSize: 8 * 1024 * 1024, files: 40 },
+  fileFilter: (req, file, callback) => {
+    if (!file.mimetype || !file.mimetype.startsWith('image/')) {
+      return callback(new Error('Seules les images sont acceptées.'));
+    }
+    callback(null, true);
+  }
 });
 
 app.use(express.json({ limit: '1mb' }));
@@ -25,7 +38,9 @@ function getToken(req) {
 
 function requireAdmin(req, res, next) {
   const token = getToken(req);
-  if (token !== ADMIN_TOKEN) {
+  try {
+    req.admin = jwt.verify(token, JWT_SECRET);
+  } catch {
     return res.status(401).json({ error: 'Non autorisé' });
   }
   next();
@@ -33,6 +48,15 @@ function requireAdmin(req, res, next) {
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, service: 'jci-oudhref' });
+});
+
+app.post('/api/admin/login', (req, res) => {
+  const password = String((req.body || {}).password || '');
+  if (!password || password !== ADMIN_TOKEN) {
+    return res.status(401).json({ error: 'Mot de passe incorrect.' });
+  }
+  const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  res.json({ token, expiresIn: JWT_EXPIRES_IN });
 });
 
 app.get('/api/site-stats', (req, res) => {
@@ -220,6 +244,19 @@ app.delete('/api/partners/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/admin/check', requireAdmin, (req, res) => {
+  res.json({ ok: true });
+});
+
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  if (err instanceof multer.MulterError || err.message === 'Seules les images sont acceptées.') {
+    return res.status(400).json({ error: err.message || 'Fichier invalide.' });
+  }
+  console.error(err);
+  res.status(500).json({ error: 'Erreur interne du serveur.' });
+});
+
 // Serve static files from the public directory
 app.use(express.static(path.join(rootDir, 'public')));
 
@@ -235,5 +272,5 @@ app.get(/^(?!\/api).*/, (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`JCI Oudhref server running on port ${PORT}`);
-  console.log(`API health check: https://jci-website-production.up.railway.app/:${PORT}/api/health`);
+  console.log('API health check: /api/health');
 });
