@@ -1,33 +1,35 @@
 const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const db = require('./db');
+const { supabase, storageBuckets } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
-if (!process.env.ADMIN_TOKEN) {
-  console.error('ERROR: ADMIN_TOKEN must be defined before starting the server.');
-  process.exit(1);
-}
-const JWT_SECRET = process.env.JWT_SECRET || ADMIN_TOKEN;
+const ADMIN_TOKEN = String(process.env.ADMIN_TOKEN || '');
+const JWT_SECRET = String(process.env.JWT_SECRET || ADMIN_TOKEN);
 const JWT_EXPIRES_IN = '8h';
 const allowedOrigins = new Set(
   String(process.env.CORS_ORIGINS || '')
     .split(',')
-    .map((origin) => origin.trim())
+    .map((origin) => origin.trim().replace(/\/$/, ''))
     .filter(Boolean)
 );
-
 const rootDir = path.join(__dirname, '..');
+const imageMimeTypes = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+
+if (!ADMIN_TOKEN || !JWT_SECRET) {
+  throw new Error('ADMIN_TOKEN and JWT_SECRET must be configured.');
+}
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024, files: 40 },
   fileFilter: (req, file, callback) => {
-    if (!file.mimetype || !file.mimetype.startsWith('image/')) {
-      return callback(new Error('Seules les images sont acceptées.'));
+    if (!imageMimeTypes.has(file.mimetype)) {
+      return callback(new Error('Seules les images JPG, PNG, GIF et WEBP sont acceptées.'));
     }
     callback(null, true);
   }
@@ -36,7 +38,7 @@ const upload = multer({
 app.use(express.json({ limit: '1mb' }));
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    if (!origin || allowedOrigins.size === 0 || allowedOrigins.has(origin.replace(/\/$/, ''))) return callback(null, true);
     callback(new Error('Origine non autorisée par CORS.'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -45,21 +47,56 @@ app.use(cors({
 }));
 
 function getToken(req) {
-  const h = req.headers['x-admin-token'];
-  if (h) return String(h);
+  const headerToken = req.headers['x-admin-token'];
+  if (headerToken) return String(headerToken);
   const auth = req.headers.authorization;
-  if (auth && /^Bearer\s+/i.test(auth)) return auth.replace(/^Bearer\s+/i, '').trim();
-  return '';
+  return auth && /^Bearer\s+/i.test(auth) ? auth.replace(/^Bearer\s+/i, '').trim() : '';
 }
 
 function requireAdmin(req, res, next) {
-  const token = getToken(req);
   try {
-    req.admin = jwt.verify(token, JWT_SECRET);
+    req.admin = jwt.verify(getToken(req), JWT_SECRET);
+    next();
   } catch {
-    return res.status(401).json({ error: 'Non autorisé' });
+    res.status(401).json({ error: 'Non autorisé' });
   }
-  next();
+}
+
+function parseId(value) {
+  const id = Number(value);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+function cleanText(value, maxLength) {
+  return String(value || '').trim().slice(0, maxLength);
+}
+
+function safeFileName(originalName) {
+  const extension = path.extname(originalName || '').toLowerCase().replace(/[^a-z0-9.]/g, '');
+  return `${crypto.randomUUID()}${extension}`;
+}
+
+async function uploadToStorage(bucket, file, prefix) {
+  const storagePath = `${prefix}/${safeFileName(file.originalname)}`;
+  const { error } = await supabase.storage.from(bucket).upload(storagePath, file.buffer, {
+    contentType: file.mimetype,
+    cacheControl: '31536000',
+    upsert: false
+  });
+  if (error) throw error;
+  return storagePath;
+}
+
+async function removeStorageObject(bucket, storagePath) {
+  if (!storagePath) return;
+  const { error } = await supabase.storage.from(bucket).remove([storagePath]);
+  if (error) console.error('Storage cleanup failed:', error.message);
+}
+
+async function downloadStorageObject(bucket, storagePath) {
+  const { data, error } = await supabase.storage.from(bucket).download(storagePath);
+  if (error || !data) return null;
+  return Buffer.from(await data.arrayBuffer());
 }
 
 app.get('/api/health', (req, res) => {
@@ -75,221 +112,214 @@ app.post('/api/admin/login', (req, res) => {
   res.json({ token, expiresIn: JWT_EXPIRES_IN });
 });
 
-app.get('/api/site-stats', (req, res) => {
-  try {
-    const row = db.prepare('SELECT actions, formations, partenariats, updated_at FROM site_stats WHERE id = 1').get();
-    res.json(row || { actions: 0, formations: 0, partenariats: 0 });
-  } catch (e) {
-    res.status(500).json({ error: String(e.message) });
-  }
+app.get('/api/admin/check', requireAdmin, (req, res) => {
+  res.json({ ok: true });
 });
 
-app.put('/api/site-stats', requireAdmin, (req, res) => {
-  const body = req.body || {};
-  const actions = Number(body.actions);
-  const formations = Number(body.formations);
-  const partenariats = Number(body.partenariats);
-  if (![actions, formations, partenariats].every((n) => Number.isFinite(n) && n >= 0)) {
+app.get('/api/site-stats', async (req, res, next) => {
+  const { data, error } = await supabase
+    .from('site_stats')
+    .select('actions, formations, partenariats, updated_at')
+    .eq('id', 1)
+    .maybeSingle();
+  if (error) return next(error);
+  res.json(data || { actions: 0, formations: 0, partenariats: 0 });
+});
+
+app.put('/api/site-stats', requireAdmin, async (req, res, next) => {
+  const values = ['actions', 'formations', 'partenariats'].map((key) => Number(req.body?.[key]));
+  if (!values.every((value) => Number.isFinite(value) && value >= 0 && Number.isInteger(value))) {
     return res.status(400).json({ error: 'Valeurs invalides.' });
   }
-  try {
-    db.prepare(
-      "UPDATE site_stats SET actions = ?, formations = ?, partenariats = ?, updated_at = datetime('now') WHERE id = 1"
-    ).run(actions, formations, partenariats);
-    const row = db.prepare('SELECT actions, formations, partenariats, updated_at FROM site_stats WHERE id = 1').get();
-    res.json(row);
-  } catch (e) {
-    res.status(500).json({ error: String(e.message) });
-  }
+  const { data, error } = await supabase
+    .from('site_stats')
+    .update({ actions: values[0], formations: values[1], partenariats: values[2], updated_at: new Date().toISOString() })
+    .eq('id', 1)
+    .select('actions, formations, partenariats, updated_at')
+    .single();
+  if (error) return next(error);
+  res.json(data);
 });
 
-app.get('/api/events', (req, res) => {
-  try {
-    const rows = db.prepare('SELECT id, date, title, type, place, description, created_at FROM agenda_events ORDER BY date ASC').all();
-    res.json(rows);
-  } catch (e) {
-    res.status(500).json({ error: String(e.message) });
-  }
+app.get('/api/events', async (req, res, next) => {
+  const { data, error } = await supabase
+    .from('agenda_events')
+    .select('id, date, title, type, place, description, created_at')
+    .order('date', { ascending: true });
+  if (error) return next(error);
+  res.json(data || []);
 });
 
-app.post('/api/events', requireAdmin, (req, res) => {
-  const { date, title, type, place, description } = req.body || {};
-  if (!date || !String(title || '').trim() || !String(place || '').trim()) {
+app.post('/api/events', requireAdmin, async (req, res, next) => {
+  const date = cleanText(req.body?.date, 10);
+  const title = cleanText(req.body?.title, 200);
+  const place = cleanText(req.body?.place, 200);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !title || !place) {
     return res.status(400).json({ error: 'Date, titre et lieu sont obligatoires.' });
   }
-  const info = db
-    .prepare(
-      'INSERT INTO agenda_events (date, title, type, place, description) VALUES (?, ?, ?, ?, ?)'
-    )
-    .run(
-      date,
-      String(title).trim(),
-      String(type || 'Événement').trim(),
-      String(place).trim(),
-      String(description || '').trim()
-    );
-  const row = db.prepare('SELECT * FROM agenda_events WHERE id = ?').get(info.lastInsertRowid);
-  res.json(row);
+  const { data, error } = await supabase
+    .from('agenda_events')
+    .insert({ date, title, type: cleanText(req.body?.type || 'Événement', 80), place, description: cleanText(req.body?.description, 2000) })
+    .select('id, date, title, type, place, description, created_at')
+    .single();
+  if (error) return next(error);
+  res.json(data);
 });
 
-app.delete('/api/events/:id', requireAdmin, (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) return res.status(400).json({ error: 'ID invalide' });
-  db.prepare('DELETE FROM agenda_events WHERE id = ?').run(id);
+app.delete('/api/events/:id', requireAdmin, async (req, res, next) => {
+  const id = parseId(req.params.id);
+  if (!id) return res.status(400).json({ error: 'ID invalide' });
+  const { error } = await supabase.from('agenda_events').delete().eq('id', id);
+  if (error) return next(error);
   res.json({ ok: true });
 });
 
-app.get('/api/gallery', (req, res) => {
-  try {
-    const rows = db
-      .prepare(
-        'SELECT id, event_key, event_title, original_name, mime, created_at FROM gallery_images ORDER BY id DESC'
-      )
-      .all();
-    res.json(rows);
-  } catch (e) {
-    res.status(500).json({ error: String(e.message) });
-  }
+app.get('/api/gallery', async (req, res, next) => {
+  const { data, error } = await supabase
+    .from('gallery_images')
+    .select('id, event_key, event_title, original_name, mime, storage_path, created_at')
+    .order('id', { ascending: false });
+  if (error) return next(error);
+  res.json(data || []);
 });
 
-app.get('/api/gallery/:id/image', (req, res) => {
-  const id = Number(req.params.id);
-  const row = db.prepare('SELECT image_blob, mime FROM gallery_images WHERE id = ?').get(id);
+app.get('/api/gallery/:id/image', async (req, res, next) => {
+  const id = parseId(req.params.id);
+  if (!id) return res.status(400).end();
+  const { data: row, error } = await supabase.from('gallery_images').select('storage_path, mime').eq('id', id).maybeSingle();
+  if (error) return next(error);
   if (!row) return res.status(404).end();
+  const buffer = await downloadStorageObject(storageBuckets.gallery, row.storage_path);
+  if (!buffer) return res.status(404).end();
   res.set('Content-Type', row.mime || 'image/jpeg');
   res.set('Cache-Control', 'public, max-age=3600');
-  res.send(row.image_blob);
+  res.send(buffer);
 });
 
-app.post('/api/gallery', requireAdmin, upload.array('images', 40), (req, res) => {
-  const event_key = req.body.event_key;
-  const event_title = req.body.event_title;
+app.post('/api/gallery', requireAdmin, upload.array('images', 40), async (req, res, next) => {
+  const eventKey = cleanText(req.body?.event_key, 120);
+  const eventTitle = cleanText(req.body?.event_title, 200);
   const files = req.files || [];
-  if (!event_key || !String(event_title || '').trim() || files.length === 0) {
+  if (!eventKey || !eventTitle || files.length === 0) {
     return res.status(400).json({ error: 'Événement et au moins une image sont requis.' });
   }
-  const insert = db.prepare(
-    'INSERT INTO gallery_images (event_key, event_title, original_name, mime, image_blob) VALUES (?, ?, ?, ?, ?)'
-  );
+  const uploaded = [];
   const ids = [];
-  const run = db.transaction((rows) => {
-    for (const file of rows) {
-      const info = insert.run(
-        String(event_key),
-        String(event_title).trim(),
-        file.originalname || 'image',
-        file.mimetype || 'application/octet-stream',
-        file.buffer
-      );
-      ids.push(Number(info.lastInsertRowid));
-    }
-    
-  });
-  run(files);
-  res.json({ ids });
-});
-
-app.delete('/api/gallery/:id', requireAdmin, (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) return res.status(400).json({ error: 'ID invalide' });
-  db.prepare('DELETE FROM gallery_images WHERE id = ?').run(id);
-  res.json({ ok: true });
-});
-
-app.get('/api/partners', (req, res) => {
   try {
-    const rows = db
-      .prepare(
-        'SELECT id, kind, name, url, original_name, mime, sort_order, created_at FROM partners ORDER BY sort_order ASC, id ASC'
-      )
-      .all();
-    res.json(rows);
-  } catch (e) {
-    res.status(500).json({ error: String(e.message) });
+    for (const file of files) {
+      const storagePath = await uploadToStorage(storageBuckets.gallery, file, eventKey.replace(/[^a-zA-Z0-9_-]/g, '_'));
+      uploaded.push(storagePath);
+      const { data, error } = await supabase.from('gallery_images').insert({
+        event_key: eventKey,
+        event_title: eventTitle,
+        original_name: cleanText(file.originalname, 255),
+        mime: file.mimetype,
+        storage_path: storagePath
+      }).select('id').single();
+      if (error) throw error;
+      ids.push(Number(data.id));
+    }
+    res.json({ ids });
+  } catch (error) {
+    await Promise.all(uploaded.map((storagePath) => removeStorageObject(storageBuckets.gallery, storagePath)));
+    if (ids.length) await supabase.from('gallery_images').delete().in('id', ids);
+    next(error);
   }
 });
 
-app.get('/api/partners/:id/logo', (req, res) => {
-  const id = Number(req.params.id);
-  const row = db.prepare('SELECT logo_blob, mime FROM partners WHERE id = ?').get(id);
+app.delete('/api/gallery/:id', requireAdmin, async (req, res, next) => {
+  const id = parseId(req.params.id);
+  if (!id) return res.status(400).json({ error: 'ID invalide' });
+  const { data: row, error: findError } = await supabase.from('gallery_images').select('storage_path').eq('id', id).maybeSingle();
+  if (findError) return next(findError);
+  if (!row) return res.status(404).json({ error: 'Image introuvable' });
+  const { error: storageError } = await supabase.storage.from(storageBuckets.gallery).remove([row.storage_path]);
+  if (storageError) return next(storageError);
+  const { error } = await supabase.from('gallery_images').delete().eq('id', id);
+  if (error) return next(error);
+  res.json({ ok: true });
+});
+
+app.get('/api/partners', async (req, res, next) => {
+  const { data, error } = await supabase
+    .from('partners')
+    .select('id, kind, name, url, original_name, mime, storage_path, sort_order, created_at')
+    .order('sort_order', { ascending: true })
+    .order('id', { ascending: true });
+  if (error) return next(error);
+  res.json(data || []);
+});
+
+app.get('/api/partners/:id/logo', async (req, res, next) => {
+  const id = parseId(req.params.id);
+  if (!id) return res.status(400).end();
+  const { data: row, error } = await supabase.from('partners').select('storage_path, mime').eq('id', id).maybeSingle();
+  if (error) return next(error);
   if (!row) return res.status(404).end();
+  const buffer = await downloadStorageObject(storageBuckets.partners, row.storage_path);
+  if (!buffer) return res.status(404).end();
   res.set('Content-Type', row.mime || 'image/png');
   res.set('Cache-Control', 'public, max-age=3600');
-  res.send(row.logo_blob);
+  res.send(buffer);
 });
 
-app.post('/api/partners', requireAdmin, upload.single('logo'), (req, res) => {
-  const { kind, name, url, sort_order } = req.body || {};
+app.post('/api/partners', requireAdmin, upload.single('logo'), async (req, res, next) => {
+  const kind = cleanText(req.body?.kind, 20);
+  const name = cleanText(req.body?.name, 200);
   const file = req.file;
-  const k = String(kind || '').trim();
-  if (!(k === 'partner' || k === 'sponsor')) {
-    return res.status(400).json({ error: 'Type invalide (partner/sponsor).' });
-  }
-  if (!String(name || '').trim() || !file) {
-    return res.status(400).json({ error: 'Nom et logo sont requis.' });
-  }
-  const order = Number(sort_order || 0);
-  if (!Number.isFinite(order)) return res.status(400).json({ error: 'Ordre invalide.' });
+  const sortOrder = Number(req.body?.sort_order || 0);
+  if (!['partner', 'sponsor'].includes(kind)) return res.status(400).json({ error: 'Type invalide (partner/sponsor).' });
+  if (!name || !file) return res.status(400).json({ error: 'Nom et logo sont requis.' });
+  if (!Number.isInteger(sortOrder) || sortOrder < 0) return res.status(400).json({ error: 'Ordre invalide.' });
+  let storagePath;
   try {
-    const info = db
-      .prepare(
-        'INSERT INTO partners (kind, name, url, original_name, mime, logo_blob, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)'
-      )
-      .run(
-        k,
-        String(name).trim(),
-        String(url || '').trim(),
-        file.originalname || 'logo',
-        file.mimetype || 'application/octet-stream',
-        file.buffer,
-        order
-      );
-    const row = db
-      .prepare('SELECT id, kind, name, url, original_name, mime, sort_order, created_at FROM partners WHERE id = ?')
-      .get(info.lastInsertRowid);
-    res.json(row);
-  } catch (e) {
-    res.status(500).json({ error: String(e.message) });
+    storagePath = await uploadToStorage(storageBuckets.partners, file, kind);
+    const { data, error } = await supabase.from('partners').insert({
+      kind,
+      name,
+      url: cleanText(req.body?.url, 1000),
+      original_name: cleanText(file.originalname, 255),
+      mime: file.mimetype,
+      storage_path: storagePath,
+      sort_order: sortOrder
+    }).select('id, kind, name, url, original_name, mime, sort_order, created_at').single();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    await removeStorageObject(storageBuckets.partners, storagePath);
+    next(error);
   }
 });
 
-app.delete('/api/partners/:id', requireAdmin, (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) return res.status(400).json({ error: 'ID invalide' });
-  db.prepare('DELETE FROM partners WHERE id = ?').run(id);
-  res.json({ ok: true });
-});
-
-app.get('/api/admin/check', requireAdmin, (req, res) => {
+app.delete('/api/partners/:id', requireAdmin, async (req, res, next) => {
+  const id = parseId(req.params.id);
+  if (!id) return res.status(400).json({ error: 'ID invalide' });
+  const { data: row, error: findError } = await supabase.from('partners').select('storage_path').eq('id', id).maybeSingle();
+  if (findError) return next(findError);
+  if (!row) return res.status(404).json({ error: 'Partenaire introuvable' });
+  const { error: storageError } = await supabase.storage.from(storageBuckets.partners).remove([row.storage_path]);
+  if (storageError) return next(storageError);
+  const { error } = await supabase.from('partners').delete().eq('id', id);
+  if (error) return next(error);
   res.json({ ok: true });
 });
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
-  if (err.message === 'Origine non autorisée par CORS.') {
-    return res.status(403).json({ error: err.message });
-  }
-  if (err instanceof multer.MulterError || err.message === 'Seules les images sont acceptées.') {
+  if (err.message === 'Origine non autorisée par CORS.') return res.status(403).json({ error: err.message });
+  if (err instanceof multer.MulterError || err.message?.startsWith('Seules les images')) {
     return res.status(400).json({ error: err.message || 'Fichier invalide.' });
   }
   console.error(err);
   res.status(500).json({ error: 'Erreur interne du serveur.' });
 });
 
-// Serve static files from the public directory
 app.use(express.static(path.join(rootDir, 'public')));
+app.get('/admin', (req, res) => res.sendFile(path.join(rootDir, 'public', 'admin.html')));
+app.get(/^(?!\/api).*/, (req, res) => res.sendFile(path.join(rootDir, 'public', 'index.html')));
 
-// Serve admin.html for /admin route
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(rootDir, 'public', 'admin.html'));
-});
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`JCI Oudhref server running on port ${PORT}`));
+}
 
-// Serve index.html for all other non-API routes (SPA support)
-app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(rootDir, 'public', 'index.html'));
-});
-
-app.listen(PORT, () => {
-  console.log(`JCI Oudhref server running on port ${PORT}`);
-  console.log('API health check: /api/health');
-});
+module.exports = app;

@@ -4,7 +4,7 @@ Site public de la Jeune Chambre Internationale d’Oudhref, avec une interface d
 
 ## Prérequis
 
-- Node.js 18 ou plus récent
+- Node.js 22 ou plus récent (required for the optional SQLite migration script)
 - npm
 
 ## Installation
@@ -18,7 +18,10 @@ npm install
 Le serveur exige un token d’administration explicite :
 
 ```powershell
+$env:SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY = "YOUR_SERVICE_ROLE_KEY"
 $env:ADMIN_TOKEN = "un-token-local-fort"
+$env:JWT_SECRET = "un-secret-jwt-long-et-aleatoire"
 npm start
 ```
 
@@ -26,29 +29,31 @@ Le site est ensuite disponible sur `http://localhost:3000` et l’administration
 
 ## Fonctionnement
 
-- Express sert les fichiers de `public/` quand le projet tourne entièrement sur Railway ; le déploiement Vercel sert le frontend statique.
-- SQLite est initialisée dans `server/data/jci.db`.
-- Les routes publiques commencent par `/api/` : agenda, galerie, statistiques et partenaires. En production Vercel, elles ciblent l’URL Railway via `JCI_API_BASE_URL`.
+- Express sert les fichiers de `public/` en local et est exporté comme fonction serverless via `api/index.js` sur Vercel.
+- Supabase PostgreSQL stocke les données et Supabase Storage stocke les images dans `jci-gallery` et `jci-partners`.
+- Les routes publiques commencent par `/api/` : agenda, galerie, statistiques et partenaires. En production Vercel, elles utilisent le même domaine ; `JCI_API_BASE_URL` est seulement nécessaire pour une API hébergée séparément.
 - Les routes d’écriture exigent `Authorization: Bearer <token>`.
-- Les images sont stockées dans SQLite, avec une limite de 8 Mo par fichier.
+- Les uploads sont limités à 8 Mo par fichier et protégés par JWT.
 
 ## Variables d’environnement
 
 - `PORT` : port HTTP, `3000` par défaut.
-- `ADMIN_TOKEN` : token obligatoire pour l’administration. Il doit être défini dans Railway ou dans l’environnement local.
-- `JWT_SECRET` : secret de signature JWT, obligatoire en production et défini uniquement dans Railway.
-- `CORS_ORIGINS` : origines Vercel autorisées, séparées par des virgules.
-- `JCI_API_BASE_URL` : URL publique Railway injectée dans le frontend pendant le build Vercel.
+- `SUPABASE_URL` : URL du projet Supabase.
+- `SUPABASE_SERVICE_ROLE_KEY` : clé secrète, uniquement côté serveur.
+- `ADMIN_TOKEN` : mot de passe d’administration.
+- `JWT_SECRET` : secret de signature JWT.
+- `CORS_ORIGINS` : origines frontend autorisées, séparées par des virgules.
+- `JCI_API_BASE_URL` : URL d’une API séparée, généralement vide sur Vercel.
 
-## Déploiement Railway
+## Déploiement Vercel
 
-Le script de démarrage est déjà configuré dans `package.json` :
+Le script de build et la fonction API sont déjà configurés :
 
 ```bash
-npm start
+npm run vercel-build
 ```
 
-Dans Railway, configure au minimum `ADMIN_TOKEN`. Utilise HTTPS et un token long, aléatoire et différent de celui du développement local.
+Ajoute les variables serveur dans Vercel Project Settings > Environment Variables. Utilise HTTPS et des secrets longs et aléatoires. Voir `DEPLOYMENT.md` pour la migration SQLite facultative et les tests.
 
 ## Vérification rapide
 

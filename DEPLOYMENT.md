@@ -1,56 +1,57 @@
-# Railway Deployment
+# Vercel + Supabase deployment
 
-## Production architecture
+## Supabase setup
 
-Deploy the frontend on Vercel and the existing Express backend on Railway. Railway continues to own the API and SQLite database:
+1. Run `supabase-migration.sql` in the Supabase SQL Editor. It is additive and does not recreate or delete the existing tables or buckets.
+2. Confirm the public buckets `jci-gallery` and `jci-partners` exist.
+3. Keep the service-role key server-side only. It must never appear in `public/`, HTML, browser JavaScript, or a client environment variable.
 
-- Public site: Vercel `/`
-- Admin: Vercel `/admin`
-- API: `/api/*`
-- SQLite database: `/app/server/data/jci.db`
+## Vercel environment variables
 
-## Railway configuration
-
-Create a Railway Volume attached to the service with this mount path:
+Add these variables in Vercel Project Settings > Environment Variables for Preview and Production:
 
 ```text
-/app/server/data
+SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
+ADMIN_TOKEN=YOUR_LONG_ADMIN_PASSWORD
+JWT_SECRET=YOUR_LONG_RANDOM_JWT_SECRET
+CORS_ORIGINS=https://YOUR_PROJECT.vercel.app,https://YOUR_CUSTOM_DOMAIN
 ```
 
-Set these service variables:
+Leave `CORS_ORIGINS` empty only when the API is used same-origin and no separate frontend origin is needed; the server then permits browser requests, while all writes still require JWT authentication. Set it to exact origins for a separate frontend/API deployment. `JCI_API_BASE_URL` is optional; leave it unset for the Vercel same-origin `/api` function.
+
+## Deploy
+
+From the repository root:
 
 ```text
-ADMIN_TOKEN=<strong-admin-password>
-JWT_SECRET=<long-random-secret>
-CORS_ORIGINS=https://YOUR-PROJECT.vercel.app,https://YOUR-CUSTOM-DOMAIN.example
+npm install
+npm run vercel-build
+vercel --prod
 ```
 
-`PORT` is provided by Railway automatically. `DB_DIR` is optional; leave it unset when using the volume path above. The startup logs print the exact SQLite path, so verify it in Railway deployment logs.
+Vercel discovers `api/index.js` as the serverless function. `vercel.json` rewrites `/api/*` to that function and `/admin` to `public/admin.html`. The exported Express app does not call `listen()` on Vercel. Local development still uses `npm start` after setting the server variables from `.env.example` in the shell or a local `.env` loader.
 
-## Vercel configuration
+## Existing SQLite data
 
-This repository is a plain static HTML project, not Vite or Next.js. Set this Vercel environment variable for the Production environment:
+If `server/data/jci.db` is available, do not delete it. Install dependencies with Node 22 or newer, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, then run:
 
 ```text
-JCI_API_BASE_URL=https://YOUR-RAILWAY-DOMAIN.up.railway.app
+node scripts/migrate-sqlite-to-supabase.js server/data/jci.db
 ```
 
-The Vercel build writes that value into `public/js/runtime-config.js`. Do not put `ADMIN_TOKEN` or `JWT_SECRET` in Vercel; they belong only in Railway.
+The script preserves IDs where possible, uploads BLOBs to the two Storage buckets, skips rows already present by ID, updates statistics, reports failures, and never removes the SQLite file. The script relies on Node's built-in `node:sqlite`; if the old database is unavailable, the data must be exported or restored before migration can succeed.
 
-Use the generated Railway domain for both public and admin access. Do not manage production data through `localhost`.
+## Verification
 
-## Verification after deployment
-
-Open these URLs using the same Railway domain:
+After deployment, check:
 
 ```text
 https://YOUR_DOMAIN/api/health
 https://YOUR_DOMAIN/api/events
+https://YOUR_DOMAIN/api/site-stats
 https://YOUR_DOMAIN/
 https://YOUR_DOMAIN/admin
 ```
 
-After creating an event from `/admin`, refresh `/api/events` and `/` to confirm that the data is shared globally. A restart must not delete the event; if it does, the volume mount path is wrong.
-
-The frontend is on Vercel and the API is on Railway, so CORS is required. `CORS_ORIGINS` must contain the exact Vercel production origin(s), including `https://` and without a trailing slash. Do not use `*`.
-
+Use the admin page to log in and test event, statistics, gallery, partner, and sponsor writes. Confirm an uploaded image loads through `/api/gallery/:id/image` or `/api/partners/:id/logo`, delete it, and verify both the row and Storage object are gone. Use an invalid Bearer token against each write route to confirm it returns `401`.

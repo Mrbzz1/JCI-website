@@ -1,5 +1,5 @@
 /**
- * Couche données : API SQLite du serveur de production.
+ * Couche données : API Supabase du serveur de production.
  */
 (function (global) {
   const API_BASE = String((global.JCI_CONFIG && global.JCI_CONFIG.apiBaseUrl) || '')
