@@ -1,14 +1,16 @@
 {
   "name": "jci-oudhref",
   "private": true,
-  "description": "Site JCI Oudhref — lance le serveur web (calendrier, galerie, API SQLite)",
+  "description": "Site JCI Oudhref — frontend statique (Vercel) + API Express/SQLite (Railway)",
+  "engines": { "node": ">=20" },
   "scripts": {
     "start": "node server/server.js",
-    "vercel-build": "node scripts/generate-client-config.js",
-    "install-server": "npm install"
+    "test": "node --test \"test/*.test.js\"",
+    "backup": "node scripts/backup-db.js",
+    "vercel-build": "node scripts/generate-client-config.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.0",
+    "better-sqlite3": "^12.8.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",

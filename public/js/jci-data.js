@@ -1,147 +1,154 @@
 /**
- * Couche données : API Supabase du serveur de production.
+ * Couche données centralisée — TOUTES les données partagées viennent de l'API Railway.
+ *
+ *  - L'URL de l'API vient de window.JCI_CONFIG.apiBaseUrl (js/runtime-config.js, généré au build Vercel
+ *    depuis JCI_API_BASE_URL). Aucun appel n'est jamais fait vers le /api de Vercel.
+ *  - Aucun repli silencieux sur localStorage : en cas d'échec, une JciError explicite est levée.
+ *  - localStorage n'est utilisé que pour des préférences d'interface (langue…), jamais pour le contenu.
+ *  - sessionStorage contient uniquement le jeton JWT de la session admin (pas le mot de passe).
  */
 (function (global) {
-  const API_BASE = String((global.JCI_CONFIG && global.JCI_CONFIG.apiBaseUrl) || '')
-    .trim()
-    .replace(/\/$/, '');
+  const cfg = global.JCI_CONFIG || {};
+  const API_BASE = String(cfg.apiBaseUrl || '').trim().replace(/\/+$/, '');
+  const CONFIG_OK = Boolean(API_BASE) || cfg.sameOrigin === true;
+  const TOKEN_KEY = 'jciAdminToken';
+  const READ_TIMEOUT_MS = 20000;   // Railway peut mettre quelques secondes à se réveiller
+  const WRITE_TIMEOUT_MS = 30000;
+  const UPLOAD_TIMEOUT_MS = 120000;
+
+  /** Erreur typée : code = config | network | timeout | auth | rate | http */
+  class JciError extends Error {
+    constructor(code, message, status) {
+      super(message);
+      this.name = 'JciError';
+      this.code = code;
+      this.status = status || 0;
+    }
+  }
+
+  const MESSAGES = {
+    config: 'Configuration manquante : l’URL de l’API (JCI_API_BASE_URL) n’est pas définie. Aucune donnée ne peut être chargée.',
+    network: 'Serveur injoignable. Vérifiez votre connexion ou réessayez dans un instant. Rien n’a été enregistré.',
+    timeout: 'Le serveur met trop de temps à répondre. Réessayez dans un instant.',
+    auth: 'Session expirée ou non autorisée. Reconnectez-vous.',
+    rate: 'Trop de tentatives. Réessayez dans quelques minutes.'
+  };
 
   function apiUrl(path) {
     return API_BASE + path;
   }
 
-  const LS = {
-    agendaPublished: 'jciAgendaEvents',
-    agendaDraft: 'jciAgendaEventsDraft',
-    galleryPublished: 'jciGalleryImages',
-    galleryDraft: 'jciGalleryImagesDraft',
-    siteStatsPublished: 'jciSiteStats',
-    siteStatsDraft: 'jciSiteStatsDraft',
-    partnersPublished: 'jciPartners',
-    partnersDraft: 'jciPartnersDraft'
-  };
-
-  let apiOk = null;
-
-  async function checkApi() {
-    if (apiOk !== null) return apiOk;
-    try {
-      const r = await fetch(apiUrl('/api/health'), { cache: 'no-store' });
-      apiOk = r.ok;
-    } catch {
-      apiOk = false;
+  // ---------- Indicateur de chargement (barre fine en haut de page, sans toucher au design) ----------
+  let pending = 0;
+  function setBusy(delta) {
+    pending = Math.max(0, pending + delta);
+    if (typeof document === 'undefined' || !document.body) return;
+    let bar = document.getElementById('jci-progress');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'jci-progress';
+      bar.className = 'jci-progress';
+      bar.setAttribute('role', 'progressbar');
+      bar.setAttribute('aria-label', 'Chargement');
+      document.body.appendChild(bar);
     }
-    return apiOk;
+    bar.classList.toggle('is-active', pending > 0);
+    document.documentElement.setAttribute('aria-busy', pending > 0 ? 'true' : 'false');
   }
 
-  async function requireApi() {
-    if (!(await checkApi())) {
-      throw new Error('Serveur indisponible. La modification n’a pas été enregistrée.');
+  // ---------- Jeton admin (session uniquement) ----------
+  const getAdminToken = () => sessionStorage.getItem(TOKEN_KEY) || '';
+  const setAdminToken = (t) => sessionStorage.setItem(TOKEN_KEY, t);
+  const clearAdminToken = () => sessionStorage.removeItem(TOKEN_KEY);
+
+  /**
+   * Requête unique vers l'API. Lève JciError — ne renvoie jamais de fausses données.
+   * opts: { method, json, form, auth, timeout, raw }
+   */
+  async function request(path, opts) {
+    const o = opts || {};
+    if (!CONFIG_OK) throw new JciError('config', MESSAGES.config);
+
+    const headers = {};
+    let body;
+    if (o.json !== undefined) {
+      headers['Content-Type'] = 'application/json';
+      body = JSON.stringify(o.json);
+    } else if (o.form) {
+      body = o.form; // FormData : le navigateur fixe le Content-Type multipart
     }
-  }
+    if (o.auth) headers.Authorization = 'Bearer ' + getAdminToken();
 
-  function getAdminToken() {
-    return sessionStorage.getItem('jciAdminToken') || '';
-  }
-
-  function adminHeaders(json) {
-    const h = { Authorization: 'Bearer ' + getAdminToken() };
-    if (json) h['Content-Type'] = 'application/json';
-    return h;
-  }
-
-  async function checkAdminToken(password) {
-    if (!password || !(await checkApi())) return false;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), o.timeout || READ_TIMEOUT_MS);
+    setBusy(1);
+    let res;
     try {
-      const r = await fetch(apiUrl('/api/admin/login'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: String(password) }),
-        cache: 'no-store'
+      res = await fetch(apiUrl(path), {
+        method: o.method || 'GET',
+        headers,
+        body,
+        cache: 'no-store',
+        signal: controller.signal
       });
-      if (!r.ok) return false;
-      const data = await r.json();
-      return data.token || false;
-    } catch {
+    } catch (err) {
+      throw err && err.name === 'AbortError'
+        ? new JciError('timeout', MESSAGES.timeout)
+        : new JciError('network', MESSAGES.network);
+    } finally {
+      clearTimeout(timer);
+      setBusy(-1);
+    }
+
+    if (res.status === 401 && o.auth) {
+      clearAdminToken();
+      throw new JciError('auth', MESSAGES.auth, 401);
+    }
+    if (!res.ok) {
+      let detail = '';
+      try { detail = (await res.json()).error || ''; } catch (e) { /* corps non JSON */ }
+      if (res.status === 429) throw new JciError('rate', detail || MESSAGES.rate, 429);
+      throw new JciError('http', detail || 'Erreur serveur (' + res.status + ').', res.status);
+    }
+    return o.raw ? res : res.json();
+  }
+
+  // ---------- Santé / authentification ----------
+  /** true si l'API répond 200 sur /api/health (jamais mis en cache). */
+  async function checkApi() {
+    try {
+      await request('/api/health', { timeout: 10000 });
+      return true;
+    } catch (e) {
       return false;
     }
   }
 
-  /** Événements agenda (public / admin lecture) */
-  async function getAgendaEvents() {
-    await requireApi();
-    const r = await fetch(apiUrl('/api/events'), { cache: 'no-store' });
-    if (!r.ok) throw new Error('Impossible de charger l\'agenda.');
-    return await r.json();
-  }
-
-  /** Brouillon admin agenda (localStorage uniquement) */
-  function loadDraftEvents() {
-    const raw = localStorage.getItem(LS.agendaDraft);
-    if (!raw) {
-      const pub = localStorage.getItem(LS.agendaPublished);
-      if (!pub) return [];
-      try {
-        return JSON.parse(pub);
-      } catch {
-        return [];
-      }
-    }
+  /** Connexion admin. Lève JciError : 'auth' = mauvais mot de passe, 'network'/'timeout'/'config' = serveur. */
+  async function adminLogin(password) {
     try {
-      return JSON.parse(raw);
-    } catch {
-      return [];
+      const data = await request('/api/admin/login', { method: 'POST', json: { password: String(password || '') } });
+      if (!data.token) throw new JciError('http', 'Réponse de connexion invalide.');
+      setAdminToken(data.token);
+      return true;
+    } catch (e) {
+      if (e.code === 'http' && e.status === 401) throw new JciError('auth', 'Mot de passe incorrect.', 401);
+      throw e;
     }
   }
 
-  function saveDraftEvents(events) {
-    localStorage.setItem(LS.agendaDraft, JSON.stringify(events));
-  }
+  // ---------- Agenda ----------
+  const getAgendaEvents = () => request('/api/events');
+  const adminAddEvent = (ev) => request('/api/events', { method: 'POST', json: ev, auth: true, timeout: WRITE_TIMEOUT_MS });
+  const adminUpdateEvent = (id, ev) =>
+    request('/api/events/' + encodeURIComponent(id), { method: 'PUT', json: ev, auth: true, timeout: WRITE_TIMEOUT_MS });
+  const adminDeleteEvent = (id) =>
+    request('/api/events/' + encodeURIComponent(id), { method: 'DELETE', auth: true, timeout: WRITE_TIMEOUT_MS });
 
-  function publishAgendaLocal() {
-    const draft = loadDraftEvents();
-    localStorage.setItem(LS.agendaPublished, JSON.stringify(draft));
-    localStorage.removeItem(LS.agendaDraft);
-  }
-
-  /** Admin : ajouter un événement */
-  async function adminAddEvent(ev) {
-    await requireApi();
-    const r = await fetch(apiUrl('/api/events'), {
-      method: 'POST',
-      headers: adminHeaders(true),
-      body: JSON.stringify(ev)
-    });
-    if (r.status === 401) throw new Error('auth');
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({}));
-      throw new Error(err.error || 'Erreur serveur');
-    }
-    return await r.json();
-  }
-
-  /** Admin : supprimer un événement (id serveur ou index local) */
-  async function adminDeleteEvent(idOrIndex) {
-    await requireApi();
-    const r = await fetch(apiUrl('/api/events/' + encodeURIComponent(idOrIndex)), {
-      method: 'DELETE',
-      headers: adminHeaders(false)
-    });
-    if (r.status === 401) throw new Error('auth');
-    if (!r.ok) throw new Error('Suppression impossible');
-  }
-
-  /** Liste pour l’admin (serveur ou brouillon local) */
-  async function adminListEvents() {
-    return await getAgendaEvents();
-  }
-
-  /** Galerie : normalisée pour l’affichage { eventKey, eventTitle, src, dbId? } */
+  // ---------- Galerie ----------
+  /** Normalisée pour l'affichage : { dbId, eventKey, eventTitle, name, src } */
   async function getGalleryItems() {
-    await requireApi();
-    const r = await fetch(apiUrl('/api/gallery'), { cache: 'no-store' });
-    if (!r.ok) throw new Error('Impossible de charger la galerie.');
-    const rows = await r.json();
+    const rows = await request('/api/gallery');
     return rows.map((row) => ({
       dbId: row.id,
       eventKey: row.event_key,
@@ -151,126 +158,25 @@
     }));
   }
 
-  function loadDraftGallery() {
-    const raw = localStorage.getItem(LS.galleryDraft);
-    if (!raw) {
-      const pub = localStorage.getItem(LS.galleryPublished);
-      if (!pub) return [];
-      try {
-        return JSON.parse(pub);
-      } catch {
-        return [];
-      }
-    }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return [];
-    }
-  }
-
-  function saveDraftGallery(images) {
-    localStorage.setItem(LS.galleryDraft, JSON.stringify(images));
-  }
-
-  function publishGalleryLocal() {
-    const draft = loadDraftGallery();
-    localStorage.setItem(LS.galleryPublished, JSON.stringify(draft));
-    localStorage.removeItem(LS.galleryDraft);
-  }
-
-  async function adminGalleryListForUi() {
-    return await getGalleryItems();
-  }
-
-  async function adminAddGalleryImages({ eventKey, eventTitle, files }) {
-    await requireApi();
+  function adminAddGalleryImages({ eventKey, eventTitle, files }) {
     const fd = new FormData();
     fd.append('event_key', eventKey);
     fd.append('event_title', eventTitle);
-    for (const f of files) {
-      fd.append('images', f);
-    }
-    const r = await fetch(apiUrl('/api/gallery'), {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + getAdminToken() },
-      body: fd
-    });
-    if (r.status === 401) throw new Error('auth');
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({}));
-      throw new Error(err.error || 'Envoi impossible');
-    }
-    return await r.json();
+    for (const f of files) fd.append('images', f);
+    return request('/api/gallery', { method: 'POST', form: fd, auth: true, timeout: UPLOAD_TIMEOUT_MS });
   }
 
-  async function adminDeleteGalleryImage(idOrLocalIndex) {
-    await requireApi();
-    const r = await fetch(apiUrl('/api/gallery/' + encodeURIComponent(idOrLocalIndex)), {
-      method: 'DELETE',
-      headers: adminHeaders(false)
-    });
-    if (r.status === 401) throw new Error('auth');
-    if (!r.ok) throw new Error('Suppression impossible');
-  }
+  const adminDeleteGalleryImage = (id) =>
+    request('/api/gallery/' + encodeURIComponent(id), { method: 'DELETE', auth: true, timeout: WRITE_TIMEOUT_MS });
 
-  /** Chiffres du site */
-  async function getSiteStats() {
-    await requireApi();
-    const r = await fetch(apiUrl('/api/site-stats'), { cache: 'no-store' });
-    if (!r.ok) throw new Error('Impossible de charger les statistiques.');
-    return await r.json();
-  }
+  // ---------- Chiffres du site ----------
+  const getSiteStats = () => request('/api/site-stats');
+  const adminUpdateSiteStats = (stats) =>
+    request('/api/site-stats', { method: 'PUT', json: stats || {}, auth: true, timeout: WRITE_TIMEOUT_MS });
 
-  function loadDraftSiteStats() {
-    const raw = localStorage.getItem(LS.siteStatsDraft);
-    if (!raw) {
-      const pub = localStorage.getItem(LS.siteStatsPublished);
-      if (!pub) return { actions: 0, formations: 0, partenariats: 0 };
-      try {
-        return JSON.parse(pub);
-      } catch {
-        return { actions: 0, formations: 0, partenariats: 0 };
-      }
-    }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return { actions: 0, formations: 0, partenariats: 0 };
-    }
-  }
-
-  function saveDraftSiteStats(stats) {
-    localStorage.setItem(LS.siteStatsDraft, JSON.stringify(stats || {}));
-  }
-
-  function publishSiteStatsLocal() {
-    const draft = loadDraftSiteStats();
-    localStorage.setItem(LS.siteStatsPublished, JSON.stringify(draft));
-    localStorage.removeItem(LS.siteStatsDraft);
-  }
-
-  async function adminUpdateSiteStats(stats) {
-    await requireApi();
-    const r = await fetch(apiUrl('/api/site-stats'), {
-      method: 'PUT',
-      headers: adminHeaders(true),
-      body: JSON.stringify(stats || {})
-    });
-    if (r.status === 401) throw new Error('auth');
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({}));
-      throw new Error(err.error || 'Erreur serveur');
-    }
-    return await r.json();
-  }
-
-  /** Partenaires / Sponsors */
+  // ---------- Partenaires / sponsors ----------
   async function getPartners() {
-    await requireApi();
-    const r = await fetch(apiUrl('/api/partners'), { cache: 'no-store' });
-    if (!r.ok) throw new Error('Impossible de charger les partenaires.');
-    const rows = await r.json();
+    const rows = await request('/api/partners');
     return rows.map((row) => ({
       dbId: row.id,
       kind: row.kind,
@@ -281,107 +187,48 @@
     }));
   }
 
-  function loadDraftPartners() {
-    const raw = localStorage.getItem(LS.partnersDraft);
-    if (!raw) {
-      const pub = localStorage.getItem(LS.partnersPublished);
-      if (!pub) return [];
-      try {
-        return JSON.parse(pub);
-      } catch {
-        return [];
-      }
-    }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return [];
-    }
-  }
-
-  function saveDraftPartners(items) {
-    localStorage.setItem(LS.partnersDraft, JSON.stringify(items || []));
-  }
-
-  function publishPartnersLocal() {
-    const draft = loadDraftPartners();
-    localStorage.setItem(LS.partnersPublished, JSON.stringify(draft));
-    localStorage.removeItem(LS.partnersDraft);
-  }
-
-  async function adminPartnersListForUi() {
-    return await getPartners();
-  }
-
-  async function adminAddPartner({ kind, name, url, sortOrder, file }) {
-    await requireApi();
+  function adminAddPartner({ kind, name, url, sortOrder, file }) {
     const fd = new FormData();
     fd.append('kind', String(kind || '').trim());
     fd.append('name', String(name || '').trim());
     fd.append('url', String(url || '').trim());
     fd.append('sort_order', String(sortOrder || 0));
     fd.append('logo', file);
-    const r = await fetch(apiUrl('/api/partners'), {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + getAdminToken() },
-      body: fd
-    });
-    if (r.status === 401) throw new Error('auth');
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({}));
-      throw new Error(err.error || 'Envoi impossible');
-    }
-    return await r.json();
+    return request('/api/partners', { method: 'POST', form: fd, auth: true, timeout: UPLOAD_TIMEOUT_MS });
   }
 
-  async function adminDeletePartner(idOrLocalIndex) {
-    await requireApi();
-    const r = await fetch(apiUrl('/api/partners/' + encodeURIComponent(idOrLocalIndex)), {
-      method: 'DELETE',
-      headers: adminHeaders(false)
-    });
-    if (r.status === 401) throw new Error('auth');
-    if (!r.ok) throw new Error('Suppression impossible');
-  }
+  const adminUpdatePartner = (id, fields) =>
+    request('/api/partners/' + encodeURIComponent(id), { method: 'PUT', json: fields, auth: true, timeout: WRITE_TIMEOUT_MS });
 
-  async function usesServer() {
-    return await checkApi();
-  }
+  const adminDeletePartner = (id) =>
+    request('/api/partners/' + encodeURIComponent(id), { method: 'DELETE', auth: true, timeout: WRITE_TIMEOUT_MS });
+
+  // ---------- Sauvegarde serveur (snapshot SQLite sur le volume) ----------
+  const adminBackup = () => request('/api/admin/backup', { method: 'POST', auth: true, timeout: WRITE_TIMEOUT_MS });
 
   global.JciData = {
-    checkApi,
+    JciError,
     apiBase: API_BASE,
-    checkAdminToken,
+    configOk: CONFIG_OK,
+    checkApi,
+    adminLogin,
     getAdminToken,
-    setAdminToken: (t) => sessionStorage.setItem('jciAdminToken', t),
-    clearAdminToken: () => sessionStorage.removeItem('jciAdminToken'),
-    LS,
+    setAdminToken,
+    clearAdminToken,
     getAgendaEvents,
-    loadDraftEvents,
-    saveDraftEvents,
-    publishAgendaLocal,
+    adminListEvents: getAgendaEvents,
     adminAddEvent,
+    adminUpdateEvent,
     adminDeleteEvent,
-    adminListEvents,
     getGalleryItems,
-    loadDraftGallery,
-    saveDraftGallery,
-    publishGalleryLocal,
-    adminGalleryListForUi,
     adminAddGalleryImages,
     adminDeleteGalleryImage,
     getSiteStats,
-    loadDraftSiteStats,
-    saveDraftSiteStats,
-    publishSiteStatsLocal,
     adminUpdateSiteStats,
     getPartners,
-    loadDraftPartners,
-    saveDraftPartners,
-    publishPartnersLocal,
-    adminPartnersListForUi,
     adminAddPartner,
+    adminUpdatePartner,
     adminDeletePartner,
-    usesServer
+    adminBackup
   };
 })(typeof window !== 'undefined' ? window : globalThis);

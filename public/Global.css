@@ -1263,3 +1263,61 @@ button.danger:hover {
 .admin-actions button:hover {
     background-color: var(--color-primary-dark);
 }
+/* ---------- Indicateur de chargement (données serveur) ---------- */
+.jci-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 10000;
+    background: transparent;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.jci-progress::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -40%;
+    width: 40%;
+    height: 100%;
+    background: var(--color-accent);
+    animation: jci-progress-slide 1.1s ease-in-out infinite;
+}
+
+.jci-progress.is-active {
+    opacity: 1;
+}
+
+@keyframes jci-progress-slide {
+    from { left: -40%; }
+    to { left: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jci-progress::after {
+        animation: none;
+        left: 0;
+        width: 100%;
+    }
+}
+
+.loading-note {
+    margin: 12px 0;
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+pre.data-hint {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: inherit;
+}
+
+button:disabled[aria-busy="true"] {
+    opacity: 0.6;
+    cursor: progress;
+}

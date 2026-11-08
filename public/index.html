@@ -336,7 +336,9 @@
                 agendaHeading: 'Agenda',
                 agendaIntro: 'Calendrier des prochaines formations, événements et réunions.',
                 dataModeHint: 'Données chargées depuis le serveur (base SQLite).',
-                dataUnavailable: 'Le serveur de données est indisponible. Les données ne peuvent pas être actualisées.',
+                dataUnavailable: 'Le serveur de données est injoignable : les informations n’ont pas pu être chargées. Actualisez la page pour réessayer.',
+                dataConfigError: 'Configuration du site incomplète : l’adresse du serveur de données est manquante.',
+                loading: 'Chargement…',
                 calendarError: 'Le calendrier n’a pas pu se charger (script FullCalendar manquant ou bloqué). Vérifiez la connexion ou désactivez les bloqueurs de scripts.',
                 galleryHeading: 'Galerie',
                 galleryIntro: 'Photos des actions JCI Oudhref, organisées par événement.',
@@ -407,7 +409,9 @@
                 agendaHeading: 'Agenda',
                 agendaIntro: 'Calendar of upcoming trainings, events and meetings.',
                 dataModeHint: 'Data loaded from server (SQLite database).',
-                dataUnavailable: 'The data server is unavailable. Data cannot be refreshed.',
+                dataUnavailable: 'The data server is unreachable: information could not be loaded. Refresh the page to try again.',
+                dataConfigError: 'Site configuration incomplete: the data server address is missing.',
+                loading: 'Loading…',
                 calendarError: 'The calendar could not load (FullCalendar script missing or blocked). Check your connection or disable script blockers.',
                 galleryHeading: 'Gallery',
                 galleryIntro: 'Photos of JCI Oudhref actions, organized by event.',
@@ -514,32 +518,31 @@
             var sponsorsGrid = document.getElementById('sponsors-grid');
             var partnersGrid = document.getElementById('partners-grid');
             var partnersEmpty = document.getElementById('partners-empty');
-            try {
-                var server = await JciData.usesServer();
-                if (hint) {
-                    // On garde uniquement le message "mode serveur" et on masque le mode hors ligne.
-                    if (server) {
-                        hint.hidden = false;
-                        hint.textContent = t('dataModeHint');
-                    } else {
-                        hint.hidden = true;
-                    }
-                }
-            } catch (e) {
-                if (hint) hint.hidden = true;
-            }
-
             var calendarEl = document.getElementById('calendar');
             var calendarErr = document.getElementById('calendar-error');
+
+            // Indicateurs de chargement : remplacés dès que les données du serveur arrivent.
+            [upcomingGrid, document.getElementById('gallery-grid'), sponsorsGrid, partnersGrid].forEach(showLoading);
+
             var events = [];
+            var eventsFailed = false;
             try {
                 events = await JciData.getAgendaEvents();
+                if (hint) {
+                    hint.hidden = false;
+                    hint.textContent = t('dataModeHint');
+                }
             } catch (e) {
-                events = [];
-                if (dataError) dataError.hidden = false;
+                // Pas de repli local : on affiche une erreur claire plutôt que des données périmées ou vides.
+                eventsFailed = true;
+                showDataError(e);
             }
 
-            renderUpcoming(events, upcomingGrid, upcomingEmpty);
+            if (eventsFailed) {
+                if (upcomingGrid) upcomingGrid.innerHTML = '';
+            } else {
+                renderUpcoming(events, upcomingGrid, upcomingEmpty);
+            }
             await renderStats(statsGrid);
 
             if (!calendarEl) return;
@@ -589,6 +592,25 @@
             await renderPartners(sponsorsGrid, partnersGrid, partnersEmpty);
         });
 
+        function showLoading(el) {
+            if (!el) return;
+            el.innerHTML = '';
+            var note = document.createElement('p');
+            note.className = 'loading-note';
+            note.setAttribute('role', 'status');
+            note.textContent = t('loading');
+            el.appendChild(note);
+        }
+
+        function showDataError(err) {
+            var el = document.getElementById('data-error');
+            if (!el) return;
+            var key = err && err.code === 'config' ? 'dataConfigError' : 'dataUnavailable';
+            el.setAttribute('data-i18n-key', key);
+            el.textContent = t(key);
+            el.hidden = false;
+        }
+
         async function renderStats(gridEl) {
             if (!gridEl) return;
             try {
@@ -605,8 +627,7 @@
                     el.textContent = String(map[k] != null ? map[k] : '—');
                 });
             } catch (e) {
-                var error = document.getElementById('data-error');
-                if (error) error.hidden = false;
+                showDataError(e);
             }
         }
 
@@ -663,8 +684,9 @@
                 });
             } catch (e) {
                 if (emptyEl) emptyEl.hidden = true;
-                var error = document.getElementById('data-error');
-                if (error) error.hidden = false;
+                if (sponsorsGrid) sponsorsGrid.innerHTML = '';
+                if (partnersGrid) partnersGrid.innerHTML = '';
+                showDataError(e);
             }
         }
 
@@ -839,9 +861,9 @@ btn.setAttribute('aria-label', t('interestAria'));
             try {
                 images = await JciData.getGalleryItems();
             } catch (e) {
-                images = [];
-                var error = document.getElementById('data-error');
-                if (error) error.hidden = false;
+                grid.innerHTML = '';
+                showDataError(e);
+                return;
             }
 
             grid.innerHTML = '';

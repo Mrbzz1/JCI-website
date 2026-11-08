@@ -74,12 +74,12 @@
                         <label for="agenda-description" data-i18n-key="agendaDescriptionLabel">Description</label>
                         <textarea id="agenda-description" rows="3" placeholder="Heure, intervenant…" data-i18n-placeholder="agendaDescriptionPlaceholder"></textarea>
                     </div>
-                    <button type="submit" class="btn-primary" data-i18n-key="agendaAddButton">Ajouter</button>
+                    <button type="submit" class="btn-primary" id="agenda-submit" data-i18n-key="agendaAddButton">Ajouter</button>
+                    <button type="button" id="agenda-cancel-edit" class="btn-danger-outline" data-i18n-key="agendaCancelEdit" hidden>Annuler la modification</button>
                 </form>
 
                 <div id="agenda-local-actions" class="admin-actions">
-                    <button id="agenda-publish" type="button" class="btn-primary" data-i18n-key="agendaPublishButton">Publier l’agenda</button>
-                    <button id="agenda-reset" type="button" class="btn-danger-outline" data-i18n-key="agendaResetButton">Annuler les brouillons</button>
+                    <button id="agenda-publish" type="button" class="btn-primary" data-i18n-key="agendaPublishButton">Actualiser l’agenda</button>
                 </div>
 
                 <h3 class="subheading" data-i18n-key="agendaEventsHeading">Événements</h3>
@@ -103,8 +103,7 @@
                 <button id="gallery-add" type="button" class="btn-primary" data-i18n-key="galleryAddButton">Ajouter à la galerie</button>
 
                 <div id="gallery-local-actions" class="admin-actions">
-                    <button id="gallery-publish" type="button" class="btn-primary" data-i18n-key="galleryPublishButton">Publier la galerie</button>
-                    <button id="gallery-reset" type="button" class="btn-danger-outline" data-i18n-key="galleryResetButton">Annuler les brouillons</button>
+                    <button id="gallery-publish" type="button" class="btn-primary" data-i18n-key="galleryPublishButton">Actualiser la galerie</button>
                 </div>
 
                 <h3 class="subheading" data-i18n-key="galleryPreviewHeading">Aperçu</h3>
@@ -133,8 +132,7 @@
                 </form>
 
                 <div id="stats-local-actions" class="admin-actions">
-                    <button id="stats-publish" type="button" class="btn-primary" data-i18n-key="statsPublishButton">Publier les chiffres</button>
-                    <button id="stats-reset" type="button" class="btn-danger-outline" data-i18n-key="statsResetButton">Annuler les brouillons</button>
+                    <button id="stats-publish" type="button" class="btn-primary" data-i18n-key="statsPublishButton">Actualiser les chiffres</button>
                 </div>
 
                 <h3 class="subheading" data-i18n-key="partnersSectionHeading">Partenaires & Sponsors</h3>
@@ -166,12 +164,26 @@
                 </form>
 
                 <div id="partners-local-actions" class="admin-actions">
-                    <button id="partners-publish" type="button" class="btn-primary" data-i18n-key="partnersPublishButton">Publier partenaires</button>
-                    <button id="partners-reset" type="button" class="btn-danger-outline" data-i18n-key="partnersResetButton">Annuler les brouillons</button>
+                    <button id="partners-publish" type="button" class="btn-primary" data-i18n-key="partnersPublishButton">Actualiser partenaires</button>
                 </div>
 
                 <h3 class="subheading" data-i18n-key="partnersListHeading">Liste</h3>
                 <div id="partners-list" class="gallery-grid-root"></div>
+
+                <div id="migrate-section" hidden>
+                    <h3 class="subheading" data-i18n-key="migrateHeading">Migration des données de ce navigateur</h3>
+                    <p class="section-intro" data-i18n-key="migrateIntro"></p>
+                    <p id="migrate-summary" class="data-hint"></p>
+                    <div class="form-row">
+                        <label><input type="checkbox" id="migrate-drafts"> <span data-i18n-key="migrateDrafts">Inclure aussi les brouillons non publiés</span></label>
+                    </div>
+                    <div class="admin-actions">
+                        <button id="migrate-export" type="button" class="btn-primary" data-i18n-key="migrateExport">1. Télécharger la sauvegarde locale (JSON)</button>
+                        <button id="migrate-run" type="button" class="btn-primary" data-i18n-key="migrateRun">2. Migrer vers le serveur</button>
+                        <button id="migrate-clear" type="button" class="btn-danger-outline" data-i18n-key="migrateClear" hidden>3. Effacer les données locales migrées</button>
+                    </div>
+                    <pre id="migrate-report" class="data-hint" role="status" hidden></pre>
+                </div>
             </section>
         </div>
     </main>
@@ -182,6 +194,7 @@
 
     <script src="js/runtime-config.js"></script>
     <script src="js/jci-data.js"></script>
+    <script src="js/jci-migrate.js"></script>
     <script>
         const loginSection = document.getElementById('login-section');
         const loginBox = document.getElementById('login-box');
@@ -193,12 +206,10 @@
         const galleryAdminSection = document.getElementById('gallery-admin');
         const siteAdminSection = document.getElementById('site-admin');
         const modeBanner = document.getElementById('admin-mode-banner');
-        const agendaLocalActions = document.getElementById('agenda-local-actions');
-        const galleryLocalActions = document.getElementById('gallery-local-actions');
-        const statsLocalActions = document.getElementById('stats-local-actions');
-        const partnersLocalActions = document.getElementById('partners-local-actions');
 
         const form = document.getElementById('agenda-form');
+        const submitButton = document.getElementById('agenda-submit');
+        const cancelEditButton = document.getElementById('agenda-cancel-edit');
         const list = document.getElementById('agenda-list');
         const dateInput = document.getElementById('agenda-date');
         const titleInput = document.getElementById('agenda-title');
@@ -207,21 +218,18 @@
         const descInput = document.getElementById('agenda-description');
 
         const agendaPublishButton = document.getElementById('agenda-publish');
-        const agendaResetButton = document.getElementById('agenda-reset');
 
         const galleryEventSelect = document.getElementById('gallery-event');
         const galleryFilesInput = document.getElementById('gallery-files');
         const galleryAddButton = document.getElementById('gallery-add');
         const galleryGrid = document.getElementById('gallery-grid');
         const galleryPublishButton = document.getElementById('gallery-publish');
-        const galleryResetButton = document.getElementById('gallery-reset');
 
         const statsForm = document.getElementById('stats-form');
         const statActionsInput = document.getElementById('stat-actions');
         const statFormationsInput = document.getElementById('stat-formations');
         const statPartenariatsInput = document.getElementById('stat-partenariats');
         const statsPublishButton = document.getElementById('stats-publish');
-        const statsResetButton = document.getElementById('stats-reset');
 
         const partnerForm = document.getElementById('partner-form');
         const partnerKindSelect = document.getElementById('partner-kind');
@@ -230,7 +238,6 @@
         const partnerOrderInput = document.getElementById('partner-order');
         const partnerLogoInput = document.getElementById('partner-logo');
         const partnersPublishButton = document.getElementById('partners-publish');
-        const partnersResetButton = document.getElementById('partners-reset');
         const partnersList = document.getElementById('partners-list');
         const langToggleButton = document.getElementById('lang-toggle');
 
@@ -263,8 +270,7 @@
                 agendaDescriptionLabel: 'Description',
                 agendaDescriptionPlaceholder: 'Heure, intervenant…',
                 agendaAddButton: 'Ajouter',
-                agendaPublishButton: 'Publier l’agenda',
-                agendaResetButton: 'Annuler les brouillons',
+                agendaPublishButton: 'Actualiser l’agenda',
                 agendaEventsHeading: 'Événements',
                 galleryHeading: 'Gérer la galerie',
                 galleryIntro: 'Associez des images à un événement de l’agenda.',
@@ -272,8 +278,7 @@
                 galleryEventDefault: '— Choisir un événement —',
                 galleryFilesLabel: 'Images (PNG, JPG…)',
                 galleryAddButton: 'Ajouter à la galerie',
-                galleryPublishButton: 'Publier la galerie',
-                galleryResetButton: 'Annuler les brouillons',
+                galleryPublishButton: 'Actualiser la galerie',
                 galleryPreviewHeading: 'Aperçu',
                 siteHeading: 'Contenu du site',
                 siteIntro: 'Gérez les chiffres et la section Partenaires / Sponsors.',
@@ -282,8 +287,7 @@
                 statsFormationsLabel: 'Formations',
                 statsPartenariatsLabel: 'Partenariats',
                 statsSaveButton: 'Enregistrer',
-                statsPublishButton: 'Publier les chiffres',
-                statsResetButton: 'Annuler les brouillons',
+                statsPublishButton: 'Actualiser les chiffres',
                 partnersSectionHeading: 'Partenaires & Sponsors',
                 partnerKindLabel: 'Type',
                 partnerKindOptionSponsor: 'Sponsor',
@@ -295,12 +299,33 @@
                 partnerOrderLabel: 'Ordre (optionnel)',
                 partnerLogoLabel: 'Logo (PNG/JPG)',
                 partnerAddButton: 'Ajouter',
-                partnersPublishButton: 'Publier partenaires',
-                partnersResetButton: 'Annuler les brouillons',
+                partnersPublishButton: 'Actualiser partenaires',
                 partnersListHeading: 'Liste',
                 footerText: 'En production, utilisez HTTPS et un mot de passe fort côté serveur (ADMIN_TOKEN).',
-                modeBrowser: 'Mode navigateur : utilisez « Publier » pour rendre les changements visibles sur le site (localStorage).',
-                modeServer: 'Mode serveur : les ajouts et suppressions sont enregistrés dans la base SQLite.',
+                modeServer: 'Mode serveur : chaque modification est enregistrée immédiatement dans la base SQLite et visible sur tous les appareils.',
+                refreshed: 'Données actualisées depuis le serveur.',
+                agendaSaveButton: 'Enregistrer',
+                agendaCancelEdit: 'Annuler la modification',
+                editButton: 'Modifier',
+                confirmDelete: 'Supprimer définitivement cet élément pour tous les appareils ?',
+                eventUpdatedServer: 'Événement modifié sur le serveur.',
+                eventGone: 'Cet événement n’existe plus sur le serveur (supprimé depuis un autre appareil ?). Actualisez la liste.',
+                loadingLabel: 'Chargement…',
+                errConfig: 'Configuration manquante : l’URL de l’API (JCI_API_BASE_URL) n’est pas définie dans Vercel. Voir DEPLOYMENT.md.',
+                errNetwork: 'Serveur injoignable. Rien n’a été enregistré. Vérifiez la connexion puis réessayez.',
+                errTimeout: 'Le serveur met trop de temps à répondre. Réessayez dans un instant.',
+                errRate: 'Trop de tentatives de connexion. Réessayez dans quelques minutes.',
+                errFileInvalid: 'format ou taille invalide (JPG, PNG, GIF ou WEBP, 8 Mo maximum).',
+                migrateHeading: 'Migration des données de ce navigateur',
+                migrateIntro: 'Des contenus de l’ancien mode « navigateur » (localStorage) ont été trouvés ici. Une sauvegarde du serveur est créée automatiquement avant la migration ; rien n’est écrasé ni dupliqué ; les données locales ne sont effacées que si vous le demandez, après vérification.',
+                migrateSummary: 'Détecté : {events} événement(s), {gallery} image(s), {partners} partenaire(s), chiffres : {stats}.',
+                migrateDrafts: 'Inclure aussi les brouillons non publiés',
+                migrateExport: '1. Télécharger la sauvegarde locale (JSON)',
+                migrateRun: '2. Migrer vers le serveur',
+                migrateClear: '3. Effacer les données locales migrées',
+                migrateConfirm: 'Migrer ces données vers le serveur ? Une sauvegarde du serveur est créée d’abord ; les éléments déjà présents sont ignorés.',
+                migrateNoExport: 'Vous n’avez pas téléchargé la sauvegarde locale (étape 1). Continuer quand même ?',
+                migrateConfirmClear: 'Effacer définitivement les données locales de ce navigateur ? La migration a été vérifiée, mais cette action est irréversible.',
                 deleteButton: 'Supprimer',
                 galleryPhotoCountOne: '1 photo',
                 galleryPhotoCountMany: '{n} photos',
@@ -311,9 +336,6 @@
                 imagesSavedServer: 'Images enregistrées sur le serveur.',
                 partnerSavedServer: 'Partenaire enregistré sur le serveur.',
                 statsSavedServer: 'Chiffres enregistrés sur le serveur.',
-                agendaPublished: 'Agenda publié (localStorage). Actualisez la page d’accueil.',
-                galleryPublished: 'Galerie publiée (localStorage). Actualisez la page d’accueil.',
-                partnersPublished: 'Partenaires publiés (localStorage). Actualisez la page d’accueil.',
                 galleryChooseEvent: 'Choisissez un événement pour ces photos.',
                 otherLabel: 'Autre',
                 noPartnersMessage: 'Aucun partenaire/sponsor pour le moment.',
@@ -346,8 +368,7 @@
                 agendaDescriptionLabel: 'Description',
                 agendaDescriptionPlaceholder: 'Time, speaker…',
                 agendaAddButton: 'Add',
-                agendaPublishButton: 'Publish agenda',
-                agendaResetButton: 'Discard drafts',
+                agendaPublishButton: 'Refresh agenda',
                 agendaEventsHeading: 'Events',
                 galleryHeading: 'Manage gallery',
                 galleryIntro: 'Attach images to an agenda event.',
@@ -355,8 +376,7 @@
                 galleryEventDefault: '— Choose an event —',
                 galleryFilesLabel: 'Images (PNG, JPG…)',
                 galleryAddButton: 'Add to gallery',
-                galleryPublishButton: 'Publish gallery',
-                galleryResetButton: 'Discard drafts',
+                galleryPublishButton: 'Refresh gallery',
                 galleryPreviewHeading: 'Preview',
                 siteHeading: 'Site content',
                 siteIntro: 'Manage stats and the Partners / Sponsors section.',
@@ -365,8 +385,7 @@
                 statsFormationsLabel: 'Trainings',
                 statsPartenariatsLabel: 'Partnerships',
                 statsSaveButton: 'Save',
-                statsPublishButton: 'Publish stats',
-                statsResetButton: 'Discard drafts',
+                statsPublishButton: 'Refresh stats',
                 partnersSectionHeading: 'Partners & Sponsors',
                 partnerKindLabel: 'Type',
                 partnerKindOptionSponsor: 'Sponsor',
@@ -378,12 +397,33 @@
                 partnerOrderLabel: 'Order (optional)',
                 partnerLogoLabel: 'Logo (PNG/JPG)',
                 partnerAddButton: 'Add',
-                partnersPublishButton: 'Publish partners',
-                partnersResetButton: 'Discard drafts',
+                partnersPublishButton: 'Refresh partners',
                 partnersListHeading: 'List',
                 footerText: 'In production, use HTTPS and a strong server password (ADMIN_TOKEN).',
-                modeBrowser: 'Browser mode: use “Publish” to make changes visible on the site (localStorage).',
-                modeServer: 'Server mode: additions and deletions are saved to SQLite.',
+                modeServer: 'Server mode: every change is saved immediately to the SQLite database and visible on all devices.',
+                refreshed: 'Data refreshed from the server.',
+                agendaSaveButton: 'Save',
+                agendaCancelEdit: 'Cancel editing',
+                editButton: 'Edit',
+                confirmDelete: 'Permanently delete this item for all devices?',
+                eventUpdatedServer: 'Event updated on the server.',
+                eventGone: 'This event no longer exists on the server (deleted from another device?). Refresh the list.',
+                loadingLabel: 'Loading…',
+                errConfig: 'Missing configuration: the API URL (JCI_API_BASE_URL) is not set in Vercel. See DEPLOYMENT.md.',
+                errNetwork: 'Server unreachable. Nothing was saved. Check your connection and try again.',
+                errTimeout: 'The server is taking too long to respond. Try again in a moment.',
+                errRate: 'Too many login attempts. Try again in a few minutes.',
+                errFileInvalid: 'invalid format or size (JPG, PNG, GIF or WEBP, 8 MB max).',
+                migrateHeading: 'Migrate data from this browser',
+                migrateIntro: 'Content from the old “browser mode” (localStorage) was found here. A server backup is created automatically before migrating; nothing is overwritten or duplicated; local data is only erased if you ask, after verification.',
+                migrateSummary: 'Found: {events} event(s), {gallery} image(s), {partners} partner(s), stats: {stats}.',
+                migrateDrafts: 'Also include unpublished drafts',
+                migrateExport: '1. Download local backup (JSON)',
+                migrateRun: '2. Migrate to the server',
+                migrateClear: '3. Erase migrated local data',
+                migrateConfirm: 'Migrate this data to the server? A server backup is created first; items already present are skipped.',
+                migrateNoExport: 'You have not downloaded the local backup (step 1). Continue anyway?',
+                migrateConfirmClear: 'Permanently erase this browser’s local data? The migration was verified, but this cannot be undone.',
                 deleteButton: 'Delete',
                 galleryPhotoCountOne: '1 photo',
                 galleryPhotoCountMany: '{n} photos',
@@ -394,9 +434,6 @@
                 imagesSavedServer: 'Images saved to server.',
                 partnerSavedServer: 'Partner saved to server.',
                 statsSavedServer: 'Stats saved to server.',
-                agendaPublished: 'Agenda published (localStorage). Refresh the homepage.',
-                galleryPublished: 'Gallery published (localStorage). Refresh the homepage.',
-                partnersPublished: 'Partners published (localStorage). Refresh the homepage.',
                 galleryChooseEvent: 'Choose an event for these photos.',
                 otherLabel: 'Other',
                 noPartnersMessage: 'No partners/sponsors yet.',
@@ -457,23 +494,94 @@
 
         applyTranslations();
 
+        // ---------------------------------------------------------------------------------------------
+        // Toutes les données viennent du serveur (Railway) via JciData. Aucune donnée n'est conservée
+        // dans le navigateur : une modification n'apparaît qu'après une réponse réussie du serveur.
+        // ---------------------------------------------------------------------------------------------
+        const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+        const IMAGE_TYPES = /^image\/(jpeg|png|gif|webp)$/;
+        const EVENT_TYPE_ALIASES = { Training: 'Formation', Event: 'Événement', Meeting: 'Réunion' };
+        let editingEventId = null;
+
         function showToast(msg) {
             alert(msg);
         }
 
-        function setLocalActionsVisible(visible) {
-            if (agendaLocalActions) agendaLocalActions.hidden = !visible;
-            if (galleryLocalActions) galleryLocalActions.hidden = !visible;
-            if (statsLocalActions) statsLocalActions.hidden = !visible;
-            if (partnersLocalActions) partnersLocalActions.hidden = !visible;
+        function describe(err) {
+            if (!err) return t('errorGeneric');
+            switch (err.code) {
+                case 'config': return t('errConfig');
+                case 'network': return t('errNetwork');
+                case 'timeout': return t('errTimeout');
+                case 'auth': return t('sessionExpired');
+                case 'rate': return t('errRate');
+                default: return err.message || t('errorGeneric');
+            }
+        }
+
+        function lockPanel() {
+            adminPanel.hidden = true;
+            loginSection.hidden = false;
+            passwordInput.value = '';
+        }
+
+        function handleError(err) {
+            showToast(describe(err));
+            if (err && err.code === 'auth') lockPanel();
+        }
+
+        /** Exécute une action en désactivant le bouton (évite les doubles envois = doublons en base). */
+        async function guarded(button, fn) {
+            if (button && button.disabled) return;
+            if (button) {
+                button.disabled = true;
+                button.setAttribute('aria-busy', 'true');
+            }
+            try {
+                return await fn();
+            } catch (err) {
+                handleError(err);
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.removeAttribute('aria-busy');
+                }
+            }
+        }
+
+        function clearElement(el) {
+            while (el.firstChild) el.removeChild(el.firstChild);
+        }
+
+        function listState(el, kind, message) {
+            clearElement(el);
+            const p = document.createElement('p');
+            p.className = kind === 'error' ? 'form-error' : 'muted';
+            p.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+            p.textContent = message;
+            el.appendChild(p);
+        }
+
+        /** Affiche « Chargement… », exécute le rendu, et remplace par un message d'erreur clair si le serveur échoue. */
+        async function loadInto(el, fn) {
+            listState(el, 'loading', t('loadingLabel'));
+            try {
+                await fn();
+            } catch (err) {
+                listState(el, 'error', describe(err));
+                if (err && err.code === 'auth') lockPanel();
+            }
         }
 
         async function updateModeUi() {
-            const server = await JciData.usesServer();
-            if (modeBanner) {
-                modeBanner.textContent = server ? t('modeServer') : t('loginServerError');
+            if (!modeBanner) return;
+            if (!JciData.configOk) {
+                modeBanner.textContent = t('errConfig');
+                return;
             }
-            setLocalActionsVisible(false);
+            const ok = await JciData.checkApi();
+            const host = JciData.apiBase ? new URL(JciData.apiBase).host : window.location.host;
+            modeBanner.textContent = ok ? t('modeServer') + ' [' + host + ']' : t('errNetwork');
         }
 
         function switchTab(name) {
@@ -495,9 +603,7 @@
                 const showSite = name === 'site';
                 siteAdminSection.hidden = !showSite;
                 siteAdminSection.classList.toggle('is-active', showSite);
-                if (showSite) {
-                    renderSiteAdmin();
-                }
+                if (showSite) renderSiteAdmin();
             }
         }
 
@@ -510,287 +616,342 @@
         }
 
         async function populateGalleryEventsSelect() {
-            const events = await JciData.adminListEvents();
+            let events = [];
+            try {
+                events = await JciData.getAgendaEvents();
+            } catch (err) {
+                if (err && err.code === 'auth') lockPanel();
+                return; // l'erreur est déjà affichée par la liste d'agenda
+            }
+            const previous = galleryEventSelect.value;
             galleryEventSelect.innerHTML = '<option value="">— Choisir un événement —</option>';
             events
                 .slice()
                 .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
                 .forEach((ev) => {
-                    const key = eventKey(ev);
                     const option = document.createElement('option');
-                    option.value = key;
+                    option.value = eventKey(ev);
                     option.textContent = (ev.date || '') + ' — ' + (ev.title || '');
                     galleryEventSelect.appendChild(option);
                 });
+            galleryEventSelect.value = previous;
         }
 
-        function clearElement(el) {
-            while (el.firstChild) el.removeChild(el.firstChild);
+        function resetEventForm() {
+            editingEventId = null;
+            form.reset();
+            submitButton.setAttribute('data-i18n-key', 'agendaAddButton');
+            submitButton.textContent = t('agendaAddButton');
+            cancelEditButton.hidden = true;
         }
 
-        async function renderSiteAdmin() {
-            try {
-                const server = await JciData.usesServer();
-                let stats = server ? await JciData.getSiteStats() : JciData.loadDraftSiteStats();
-                stats = stats || { actions: 0, formations: 0, partenariats: 0 };
-                if (statActionsInput) statActionsInput.value = String(stats.actions || 0);
-                if (statFormationsInput) statFormationsInput.value = String(stats.formations || 0);
-                if (statPartenariatsInput) statPartenariatsInput.value = String(stats.partenariats || 0);
-            } catch (e) {}
-
-            try {
-                await renderPartnersAdmin();
-            } catch (e) {}
+        function startEditEvent(ev) {
+            editingEventId = ev.id;
+            dateInput.value = ev.date || '';
+            titleInput.value = ev.title || '';
+            placeInput.value = ev.place || '';
+            descInput.value = ev.description || '';
+            const type = EVENT_TYPE_ALIASES[ev.type] || ev.type || 'Événement';
+            if (!Array.from(typeSelect.options).some((o) => o.value === type)) {
+                const o = document.createElement('option');
+                o.value = type;
+                o.textContent = type;
+                typeSelect.appendChild(o);
+            }
+            typeSelect.value = type;
+            submitButton.setAttribute('data-i18n-key', 'agendaSaveButton');
+            submitButton.textContent = t('agendaSaveButton');
+            cancelEditButton.hidden = false;
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            titleInput.focus();
         }
 
         async function renderEvents() {
-            clearElement(list);
-            const server = await JciData.usesServer();
-            let rows = await JciData.adminListEvents();
+            await loadInto(list, async () => {
+                const rows = (await JciData.getAgendaEvents()).slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+                clearElement(list);
+                rows.forEach((ev) => {
+                    const li = document.createElement('li');
+                    li.className = 'agenda-admin-item';
 
-            if (!server) {
-                rows = rows.map((ev, i) => Object.assign({}, ev, { _localIndex: i }));
-                rows.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-            } else {
-                rows = rows.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-            }
+                    const line = document.createElement('div');
+                    line.className = 'agenda-admin-line';
+                    const dateSpan = document.createElement('span');
+                    dateSpan.className = 'agenda-date';
+                    dateSpan.textContent = ev.date || '';
+                    line.appendChild(dateSpan);
+                    line.appendChild(document.createTextNode(' — '));
+                    const strong = document.createElement('strong');
+                    strong.textContent = translateEventType(ev.type);
+                    line.appendChild(strong);
+                    line.appendChild(document.createTextNode(' : '));
+                    line.appendChild(document.createTextNode(ev.title || ''));
+                    li.appendChild(line);
 
-            rows.forEach((ev) => {
-                const li = document.createElement('li');
-                li.className = 'agenda-admin-item';
+                    const placeRow = document.createElement('div');
+                    placeRow.className = 'agenda-desc';
+                    const placeLabel = document.createElement('strong');
+                    placeLabel.textContent = t('agendaPlaceLabel') + ' : ';
+                    placeRow.appendChild(placeLabel);
+                    placeRow.appendChild(document.createTextNode(ev.place || '—'));
+                    li.appendChild(placeRow);
 
-                const line = document.createElement('div');
-                line.className = 'agenda-admin-line';
-                const dateSpan = document.createElement('span');
-                dateSpan.className = 'agenda-date';
-                dateSpan.textContent = ev.date || '';
-                line.appendChild(dateSpan);
-                line.appendChild(document.createTextNode(' — '));
-                const strong = document.createElement('strong');
-                strong.textContent = translateEventType(ev.type);
-                line.appendChild(strong);
-                line.appendChild(document.createTextNode(' : '));
-                line.appendChild(document.createTextNode(ev.title || ''));
-                li.appendChild(line);
-
-                const placeRow = document.createElement('div');
-                placeRow.className = 'agenda-desc';
-                const placeLabel = document.createElement('strong');
-                placeLabel.textContent = t('agendaPlaceLabel') + ' : ';
-                placeRow.appendChild(placeLabel);
-                placeRow.appendChild(document.createTextNode(ev.place || '—'));
-                li.appendChild(placeRow);
-
-                if (ev.description) {
-                    const desc = document.createElement('div');
-                    desc.className = 'agenda-desc';
-                    desc.textContent = ev.description;
-                    li.appendChild(desc);
-                }
-
-                const del = document.createElement('button');
-                del.type = 'button';
-                del.className = 'danger';
-                del.textContent = t('deleteButton');
-                del.addEventListener('click', async () => {
-                    try {
-                        if (server) {
-                            await JciData.adminDeleteEvent(ev.id);
-                        } else {
-                            await JciData.adminDeleteEvent(ev._localIndex);
-                        }
-                        await renderEvents();
-                        await populateGalleryEventsSelect();
-                        await renderGalleryAdmin();
-                    } catch (e) {
-                        if (e.message === 'auth') showToast(t('sessionExpired'));
-                        else showToast(e.message || t('errorGeneric'));
+                    if (ev.description) {
+                        const desc = document.createElement('div');
+                        desc.className = 'agenda-desc';
+                        desc.textContent = ev.description;
+                        li.appendChild(desc);
                     }
+
+                    const edit = document.createElement('button');
+                    edit.type = 'button';
+                    edit.className = 'btn-primary';
+                    edit.textContent = t('editButton');
+                    edit.addEventListener('click', () => startEditEvent(ev));
+                    li.appendChild(edit);
+
+                    const del = document.createElement('button');
+                    del.type = 'button';
+                    del.className = 'danger';
+                    del.textContent = t('deleteButton');
+                    del.addEventListener('click', () => {
+                        if (!window.confirm(t('confirmDelete'))) return;
+                        guarded(del, async () => {
+                            await JciData.adminDeleteEvent(ev.id);
+                            if (editingEventId === ev.id) resetEventForm();
+                            await Promise.all([renderEvents(), populateGalleryEventsSelect(), renderGalleryAdmin()]);
+                        });
+                    });
+                    li.appendChild(del);
+                    list.appendChild(li);
                 });
-                li.appendChild(del);
-                list.appendChild(li);
             });
         }
 
         async function renderGalleryAdmin() {
-            galleryGrid.innerHTML = '';
-            const items = await JciData.adminGalleryListForUi();
-            const server = await JciData.usesServer();
+            await loadInto(galleryGrid, async () => {
+                const items = await JciData.getGalleryItems();
+                clearElement(galleryGrid);
 
-            const byEvent = {};
-            items.forEach((img) => {
-                const key = img.eventKey || 'autre';
-                if (!byEvent[key]) byEvent[key] = [];
-                byEvent[key].push(img);
-            });
-
-            Object.keys(byEvent).forEach((key) => {
-                const group = byEvent[key];
-                const title = group[0].eventTitle || t('otherLabel');
-
-                const details = document.createElement('details');
-                details.className = 'gallery-group gallery-folder';
-                details.open = true;
-
-                const summary = document.createElement('summary');
-                summary.className = 'gallery-folder-summary';
-
-                const icon = document.createElement('span');
-                icon.className = 'gallery-folder-icon';
-                icon.setAttribute('aria-hidden', 'true');
-                icon.textContent = '\u{1F4C1}';
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'gallery-folder-name';
-                nameSpan.textContent = title;
-
-                const countSpan = document.createElement('span');
-                countSpan.className = 'gallery-folder-count';
-                const n = group.length;
-                countSpan.textContent = n === 1 ? t('galleryPhotoCountOne') : t('galleryPhotoCountMany', { n });
-
-                summary.appendChild(icon);
-                summary.appendChild(nameSpan);
-                summary.appendChild(countSpan);
-
-                const innerGrid = document.createElement('div');
-                innerGrid.className = 'gallery-grid gallery-folder-inner';
-
-                group.forEach((item) => {
-                    const card = document.createElement('div');
-                    card.className = 'gallery-card';
-                    const im = document.createElement('img');
-                    im.src = item.src;
-                    im.alt = item.name || t('photoAlt');
-                    im.loading = 'lazy';
-                    card.appendChild(im);
-                    const actions = document.createElement('div');
-                    actions.className = 'gallery-actions';
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'danger';
-                    btn.textContent = t('deleteButton');
-                    btn.addEventListener('click', async () => {
-                        try {
-                            const id = server ? item.dbId : item.localIndex;
-                            await JciData.adminDeleteGalleryImage(id);
-                            await renderGalleryAdmin();
-                        } catch (e) {
-                            if (e.message === 'auth') showToast(t('sessionExpiredShort'));
-                            else showToast(e.message || t('errorGeneric'));
-                        }
-                    });
-                    actions.appendChild(btn);
-                    card.appendChild(actions);
-                    innerGrid.appendChild(card);
+                const byEvent = {};
+                items.forEach((img) => {
+                    const key = img.eventKey || 'autre';
+                    if (!byEvent[key]) byEvent[key] = [];
+                    byEvent[key].push(img);
                 });
 
-                details.appendChild(summary);
-                details.appendChild(innerGrid);
-                galleryGrid.appendChild(details);
+                Object.keys(byEvent).forEach((key) => {
+                    const group = byEvent[key];
+                    const title = group[0].eventTitle || t('otherLabel');
+
+                    const details = document.createElement('details');
+                    details.className = 'gallery-group gallery-folder';
+                    details.open = true;
+
+                    const summary = document.createElement('summary');
+                    summary.className = 'gallery-folder-summary';
+
+                    const icon = document.createElement('span');
+                    icon.className = 'gallery-folder-icon';
+                    icon.setAttribute('aria-hidden', 'true');
+                    icon.textContent = '\u{1F4C1}';
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'gallery-folder-name';
+                    nameSpan.textContent = title;
+
+                    const countSpan = document.createElement('span');
+                    countSpan.className = 'gallery-folder-count';
+                    const n = group.length;
+                    countSpan.textContent = n === 1 ? t('galleryPhotoCountOne') : t('galleryPhotoCountMany', { n });
+
+                    summary.appendChild(icon);
+                    summary.appendChild(nameSpan);
+                    summary.appendChild(countSpan);
+
+                    const innerGrid = document.createElement('div');
+                    innerGrid.className = 'gallery-grid gallery-folder-inner';
+
+                    group.forEach((item) => {
+                        const card = document.createElement('div');
+                        card.className = 'gallery-card';
+                        const im = document.createElement('img');
+                        im.src = item.src;
+                        im.alt = item.name || t('photoAlt');
+                        im.loading = 'lazy';
+                        card.appendChild(im);
+                        const actions = document.createElement('div');
+                        actions.className = 'gallery-actions';
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'danger';
+                        btn.textContent = t('deleteButton');
+                        btn.addEventListener('click', () => {
+                            if (!window.confirm(t('confirmDelete'))) return;
+                            guarded(btn, async () => {
+                                await JciData.adminDeleteGalleryImage(item.dbId);
+                                await renderGalleryAdmin();
+                            });
+                        });
+                        actions.appendChild(btn);
+                        card.appendChild(actions);
+                        innerGrid.appendChild(card);
+                    });
+
+                    details.appendChild(summary);
+                    details.appendChild(innerGrid);
+                    galleryGrid.appendChild(details);
+                });
             });
         }
 
         async function renderPartnersAdmin() {
             if (!partnersList) return;
-            partnersList.innerHTML = '';
-            const server = await JciData.usesServer();
-            const items = await JciData.adminPartnersListForUi();
-            const rows = (items || []).slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+            await loadInto(partnersList, async () => {
+                const items = await JciData.getPartners();
+                const rows = (items || []).slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+                clearElement(partnersList);
 
-            if (!rows.length) {
-                partnersList.innerHTML = '<p class="muted">' + t('noPartnersMessage') + '</p>';
-                return;
-            }
+                if (!rows.length) {
+                    const p = document.createElement('p');
+                    p.className = 'muted';
+                    p.textContent = t('noPartnersMessage');
+                    partnersList.appendChild(p);
+                    return;
+                }
 
-            rows.forEach((item) => {
-                const card = document.createElement('div');
-                card.className = 'gallery-card';
+                rows.forEach((item) => {
+                    const card = document.createElement('div');
+                    card.className = 'gallery-card';
 
-                const im = document.createElement('img');
-                im.src = item.src;
-                im.alt = item.name || t('logoAlt');
-                im.loading = 'lazy';
-                card.appendChild(im);
+                    const im = document.createElement('img');
+                    im.src = item.src;
+                    im.alt = item.name || t('logoAlt');
+                    im.loading = 'lazy';
+                    card.appendChild(im);
 
-                const caption = document.createElement('div');
-                caption.className = 'gallery-actions';
-                caption.style.justifyContent = 'space-between';
-                caption.style.gap = '10px';
+                    const caption = document.createElement('div');
+                    caption.className = 'gallery-actions';
+                    caption.style.justifyContent = 'space-between';
+                    caption.style.gap = '10px';
 
-                const left = document.createElement('div');
-                left.style.fontWeight = '700';
-                left.style.color = 'var(--color-primary)';
-                left.textContent = t(item.kind === 'sponsor' ? 'partnerKindOptionSponsor' : 'partnerKindOptionPartner') + ' — ' + (item.name || '');
-                caption.appendChild(left);
+                    const left = document.createElement('div');
+                    left.style.fontWeight = '700';
+                    left.style.color = 'var(--color-primary)';
+                    left.textContent = t(item.kind === 'sponsor' ? 'partnerKindOptionSponsor' : 'partnerKindOptionPartner') + ' — ' + (item.name || '');
+                    caption.appendChild(left);
 
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'danger';
-                btn.textContent = t('deleteButton');
-                btn.addEventListener('click', async () => {
-                    try {
-                        const id = server ? item.dbId : item.localIndex;
-                        await JciData.adminDeletePartner(id);
-                        await renderPartnersAdmin();
-                    } catch (e) {
-                        if (e.message === 'auth') showToast(t('sessionExpiredShort'));
-                        else showToast(e.message || t('errorGeneric'));
-                    }
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'danger';
+                    btn.textContent = t('deleteButton');
+                    btn.addEventListener('click', () => {
+                        if (!window.confirm(t('confirmDelete'))) return;
+                        guarded(btn, async () => {
+                            await JciData.adminDeletePartner(item.dbId);
+                            await renderPartnersAdmin();
+                        });
+                    });
+                    caption.appendChild(btn);
+
+                    card.appendChild(caption);
+                    partnersList.appendChild(card);
                 });
-                caption.appendChild(btn);
-
-                card.appendChild(caption);
-                partnersList.appendChild(card);
             });
         }
 
-        loginButton.addEventListener('click', async () => {
+        async function renderSiteAdmin() {
+            const loadStats = async () => {
+                try {
+                    const stats = (await JciData.getSiteStats()) || {};
+                    if (statActionsInput) statActionsInput.value = String(stats.actions || 0);
+                    if (statFormationsInput) statFormationsInput.value = String(stats.formations || 0);
+                    if (statPartenariatsInput) statPartenariatsInput.value = String(stats.partenariats || 0);
+                } catch (err) {
+                    handleError(err);
+                }
+            };
+            await Promise.all([loadStats(), renderPartnersAdmin()]);
+        }
+
+        async function refreshAll() {
+            await Promise.all([renderEvents(), populateGalleryEventsSelect(), renderGalleryAdmin(), renderSiteAdmin()]);
+        }
+
+        // ---------- Connexion ----------
+        async function doLogin() {
             const val = String(passwordInput.value || '').trim();
             if (!val) {
+                loginError.setAttribute('data-i18n-key', 'loginError');
                 loginError.textContent = t('loginError');
                 loginError.hidden = false;
                 return;
             }
-            const jwtToken = await JciData.checkAdminToken(val);
-            if (!jwtToken) {
-                loginError.textContent = t('loginError');
-                loginError.hidden = false;
-                return;
-            }
-            loginError.hidden = true;
-            JciData.setAdminToken(jwtToken);
-            loginSection.hidden = true;
-            adminPanel.hidden = false;
-            await updateModeUi();
-            await renderEvents();
-            await populateGalleryEventsSelect();
-            await renderGalleryAdmin();
-            await renderSiteAdmin();
+            await guarded(loginButton, async () => {
+                try {
+                    await JciData.adminLogin(val);
+                } catch (err) {
+                    if (err && err.code === 'auth') {
+                        loginError.setAttribute('data-i18n-key', 'loginError');
+                        loginError.textContent = t('loginError');
+                        loginError.hidden = false;
+                        return;
+                    }
+                    throw err; // serveur injoignable, config manquante… : message explicite via handleError
+                }
+                loginError.hidden = true;
+                loginSection.hidden = true;
+                adminPanel.hidden = false;
+                await updateModeUi();
+                await refreshAll();
+                detectLegacyData();
+            });
+        }
+
+        loginButton.addEventListener('click', doLogin);
+        passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') doLogin();
         });
+
+        if (!JciData.configOk) {
+            loginError.setAttribute('data-i18n-key', 'errConfig');
+            loginError.textContent = t('errConfig');
+            loginError.hidden = false;
+            loginButton.disabled = true;
+        }
+
+        // ---------- Agenda ----------
+        cancelEditButton.addEventListener('click', resetEventForm);
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const date = dateInput.value;
-            const title = titleInput.value.trim();
-            const type = typeSelect.value;
-            const place = placeInput.value.trim();
-            const description = descInput.value.trim();
-            if (!date || !title || !place) return;
+            const payload = {
+                date: dateInput.value,
+                title: titleInput.value.trim(),
+                type: typeSelect.value,
+                place: placeInput.value.trim(),
+                description: descInput.value.trim()
+            };
+            if (!payload.date || !payload.title || !payload.place) return;
 
-            try {
-                await JciData.adminAddEvent({ date, title, type, place, description });
-                form.reset();
-                await renderEvents();
-                await populateGalleryEventsSelect();
-                const server = await JciData.usesServer();
-                if (server) showToast(t('eventSavedServer'));
-            } catch (err) {
-                if (err.message === 'auth') showToast(t('sessionExpired'));
-                else showToast(err.message || t('errorGeneric'));
-            }
+            await guarded(submitButton, async () => {
+                const wasEditing = editingEventId !== null;
+                if (wasEditing) await JciData.adminUpdateEvent(editingEventId, payload);
+                else await JciData.adminAddEvent(payload);
+                resetEventForm();
+                await Promise.all([renderEvents(), populateGalleryEventsSelect(), renderGalleryAdmin()]);
+                showToast(t(wasEditing ? 'eventUpdatedServer' : 'eventSavedServer'));
+            });
         });
 
+        agendaPublishButton.addEventListener('click', () =>
+            guarded(agendaPublishButton, async () => {
+                await Promise.all([renderEvents(), populateGalleryEventsSelect()]);
+                showToast(t('refreshed'));
+            })
+        );
+
+        // ---------- Galerie ----------
         galleryAddButton.addEventListener('click', async () => {
             const files = Array.from(galleryFilesInput.files || []);
             if (files.length === 0) return;
@@ -800,71 +961,77 @@
                 showToast(t('galleryChooseEvent'));
                 return;
             }
+            const invalid = files.find((f) => !IMAGE_TYPES.test(f.type) || f.size > MAX_IMAGE_BYTES);
+            if (invalid) {
+                showToast(invalid.name + ' : ' + t('errFileInvalid'));
+                return;
+            }
 
-            const events = await JciData.adminListEvents();
-            const matched = events.find((ev) => eventKey(ev) === selectedKey);
-            const eventTitle = matched ? (matched.date + ' — ' + matched.title) : t('otherLabel');
-
-            try {
+            await guarded(galleryAddButton, async () => {
+                const events = await JciData.getAgendaEvents(); // état actuel du serveur, pas une copie locale
+                const matched = events.find((ev) => eventKey(ev) === selectedKey);
+                if (!matched) {
+                    await Promise.all([renderEvents(), populateGalleryEventsSelect()]);
+                    showToast(t('eventGone'));
+                    return;
+                }
                 await JciData.adminAddGalleryImages({
                     eventKey: selectedKey,
-                    eventTitle,
+                    eventTitle: matched.date + ' — ' + matched.title,
                     files
                 });
                 galleryFilesInput.value = '';
                 await renderGalleryAdmin();
-                const server = await JciData.usesServer();
-                if (server) showToast(t('imagesSavedServer'));
-            } catch (err) {
-                if (err.message === 'auth') showToast(t('sessionExpiredShort'));
-                else showToast(err.message || t('errorGeneric'));
-            }
+                showToast(t('imagesSavedServer'));
+            });
         });
+
+        galleryPublishButton.addEventListener('click', () =>
+            guarded(galleryPublishButton, async () => {
+                await Promise.all([populateGalleryEventsSelect(), renderGalleryAdmin()]);
+                showToast(t('refreshed'));
+            })
+        );
+
+        // ---------- Chiffres du site ----------
+        function readStatsInputs() {
+            return {
+                actions: Number(statActionsInput.value || 0) || 0,
+                formations: Number(statFormationsInput.value || 0) || 0,
+                partenariats: Number(statPartenariatsInput.value || 0) || 0
+            };
+        }
 
         if (statsForm) {
             statsForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const stats = {
-                    actions: Number(statActionsInput.value || 0) || 0,
-                    formations: Number(statFormationsInput.value || 0) || 0,
-                    partenariats: Number(statPartenariatsInput.value || 0) || 0
-                };
-                try {
-                    await JciData.adminUpdateSiteStats(stats);
-                    const server = await JciData.usesServer();
-                    if (server) showToast(t('statsSavedServer'));
-                } catch (err) {
-                    if (err.message === 'auth') showToast(t('sessionExpired'));
-                    else showToast(err.message || t('errorGeneric'));
-                }
+                await guarded(statsForm.querySelector('button[type="submit"]'), async () => {
+                    await JciData.adminUpdateSiteStats(readStatsInputs());
+                    await renderSiteAdmin(); // relit la valeur réellement enregistrée par le serveur
+                    showToast(t('statsSavedServer'));
+                });
             });
         }
 
         if (statsPublishButton) {
-            statsPublishButton.addEventListener('click', () => {
-                const stats = {
-                    actions: Number(statActionsInput.value || 0) || 0,
-                    formations: Number(statFormationsInput.value || 0) || 0,
-                    partenariats: Number(statPartenariatsInput.value || 0) || 0
-                };
-                JciData.saveDraftSiteStats(stats);
-                JciData.publishSiteStatsLocal();
-                showToast(t('agendaPublished'));
-            });
+            statsPublishButton.addEventListener('click', () =>
+                guarded(statsPublishButton, async () => {
+                    await renderSiteAdmin();
+                    showToast(t('refreshed'));
+                })
+            );
         }
 
-        if (statsResetButton) {
-            statsResetButton.addEventListener('click', () => {
-                localStorage.removeItem(JciData.LS.siteStatsDraft);
-                renderSiteAdmin();
-            });
-        }
-
+        // ---------- Partenaires / sponsors ----------
         if (partnerForm) {
             partnerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const file = (partnerLogoInput && partnerLogoInput.files && partnerLogoInput.files[0]) || null;
                 if (!file) return;
+                if (!IMAGE_TYPES.test(file.type) || file.size > MAX_IMAGE_BYTES) {
+                    showToast(file.name + ' : ' + t('errFileInvalid'));
+                    return;
+                }
                 const payload = {
                     kind: partnerKindSelect.value,
                     name: partnerNameInput.value.trim(),
@@ -873,56 +1040,93 @@
                     file
                 };
                 if (!payload.name) return;
-                try {
+                await guarded(partnerForm.querySelector('button[type="submit"]'), async () => {
                     await JciData.adminAddPartner(payload);
                     partnerForm.reset();
                     await renderPartnersAdmin();
-                    const server = await JciData.usesServer();
-                    if (server) showToast(t('partnerSavedServer'));
-                } catch (err) {
-                    if (err.message === 'auth') showToast(t('sessionExpiredShort'));
-                    else showToast(err.message || t('errorGeneric'));
-                }
+                    showToast(t('partnerSavedServer'));
+                });
             });
         }
 
         if (partnersPublishButton) {
-            partnersPublishButton.addEventListener('click', () => {
-                JciData.publishPartnersLocal();
-                renderPartnersAdmin();
-                showToast(t('partnersPublished'));
-            });
+            partnersPublishButton.addEventListener('click', () =>
+                guarded(partnersPublishButton, async () => {
+                    await renderPartnersAdmin();
+                    showToast(t('refreshed'));
+                })
+            );
         }
 
-        if (partnersResetButton) {
-            partnersResetButton.addEventListener('click', () => {
-                localStorage.removeItem(JciData.LS.partnersDraft);
-                renderPartnersAdmin();
-            });
+        // ---------- Migration des anciennes données localStorage ----------
+        const migrateSection = document.getElementById('migrate-section');
+        const migrateSummary = document.getElementById('migrate-summary');
+        const migrateDrafts = document.getElementById('migrate-drafts');
+        const migrateExportButton = document.getElementById('migrate-export');
+        const migrateRunButton = document.getElementById('migrate-run');
+        const migrateClearButton = document.getElementById('migrate-clear');
+        const migrateReport = document.getElementById('migrate-report');
+        let migrateBackupDownloaded = false;
+
+        function detectLegacyData() {
+            if (!migrateSection || !window.JciMigrate) return;
+            const anything = JciMigrate.detect(true);
+            migrateSection.hidden = !JciMigrate.hasLocalData(anything);
+            const c = JciMigrate.detect(migrateDrafts.checked).counts;
+            migrateSummary.textContent = t('migrateSummary')
+                .replace('{events}', c.events).replace('{gallery}', c.gallery)
+                .replace('{partners}', c.partners).replace('{stats}', c.stats ? '1' : '0');
         }
 
-        agendaPublishButton.addEventListener('click', () => {
-            JciData.publishAgendaLocal();
-            renderEvents();
-            populateGalleryEventsSelect();
-            showToast(t('agendaPublished'));
-        });
+        if (migrateSection) {
+            migrateDrafts.addEventListener('change', detectLegacyData);
 
-        agendaResetButton.addEventListener('click', () => {
-            localStorage.removeItem(JciData.LS.agendaDraft);
-            renderEvents();
-        });
+            migrateExportButton.addEventListener('click', () => {
+                const blob = new Blob([JciMigrate.exportBackup()], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'jci-sauvegarde-locale-' + new Date().toISOString().slice(0, 10) + '.json';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+                migrateBackupDownloaded = true;
+            });
 
-        galleryPublishButton.addEventListener('click', () => {
-            JciData.publishGalleryLocal();
-            renderGalleryAdmin();
-            showToast(t('galleryPublished'));
-        });
+            migrateRunButton.addEventListener('click', async () => {
+                if (!window.confirm(t('migrateConfirm'))) return;
+                if (!migrateBackupDownloaded && !window.confirm(t('migrateNoExport'))) return;
+                migrateReport.hidden = false;
+                await guarded(migrateRunButton, async () => {
+                    const r = await JciMigrate.run({
+                        includeDrafts: migrateDrafts.checked,
+                        onProgress: (msg) => { migrateReport.textContent = msg; }
+                    });
+                    const lines = [];
+                    lines.push('Sauvegarde serveur : ' + (r.backup || '—'));
+                    ['events', 'gallery', 'partners', 'stats'].forEach((k) => {
+                        lines.push(k + ' : ' + r.created[k] + ' créé(s), ' + r.skipped[k] + ' déjà présent(s)/ignoré(s)');
+                    });
+                    (r.failed || []).forEach((f) => lines.push('ÉCHEC — ' + f));
+                    (r.missing || []).forEach((m) => lines.push('ABSENT du serveur — ' + m));
+                    lines.push(r.verified ? 'Vérification : OK — tout est sur le serveur.' : 'Vérification : INCOMPLÈTE — les données locales sont conservées.');
+                    migrateReport.textContent = lines.join('\n');
+                    migrateClearButton.hidden = !r.verified;
+                    await refreshAll();
+                });
+            });
 
-        galleryResetButton.addEventListener('click', () => {
-            localStorage.removeItem(JciData.LS.galleryDraft);
-            renderGalleryAdmin();
-        });
+            migrateClearButton.addEventListener('click', () => {
+                if (!window.confirm(t('migrateConfirmClear'))) return;
+                try {
+                    JciMigrate.clearLocal();
+                    migrateClearButton.hidden = true;
+                    detectLegacyData();
+                } catch (err) {
+                    showToast(err.message);
+                }
+            });
+        }
     </script>
 </body>
 </html>

@@ -1,1 +1,1 @@
-window.JCI_CONFIG = { apiBaseUrl: "" };
+window.JCI_CONFIG = { apiBaseUrl: "", sameOrigin: false };
